@@ -3,14 +3,6 @@
 This guide prepares a Windows machine to use this template and to install it into
 another repository.
 
-Use this Windows documentation set in this order:
-
-1. `README.md` for the general operational flow
-2. [make_install.md](make_install.md) for GNU Make installation and corporate/manual usage
-3. [uv_install.md](uv_install.md) for uv installation and corporate/manual usage
-4. [make_cheatlist.md](make_cheatlist.md) for day-to-day `make` command examples
-5. [template_versioning.md](template_versioning.md) for how version detection works and when to use `--force` vs version bumps
-
 ## Prepare the Template Repository
 
 From the repository root:
@@ -19,25 +11,13 @@ From the repository root:
 .\scripts\windows\setup_env.ps1
 ```
 
-This Windows wrapper resolves Python automatically, validates `uv`, creates
-`.venv` if needed, and syncs the local environment using the project's current
-`pyproject.toml` and `uv.lock`.
-
-By default, the local uv workflow installs:
-
-- the shared base dependencies from `pyproject.toml`
-- the `dev-local` dependency group
-
-The cloud uv workflow installs:
-
-- the shared base dependencies from `pyproject.toml`
-- the `local` and `cloud` optional dependency sets
-- the `dev-local` and `dev-cloud` dependency groups
+This Windows wrapper resolves Python automatically, creates `.venv` if needed
+with `python -m venv`, and installs dependencies with `pip` from the project's
+current `requirements.txt` (and `requirements-dev.txt` unless `-NoDev` is
+passed).
 
 When you install this template into another repository, the installer copies
-`pyproject.toml` and `uv.lock`. The installer also writes
-`.template-profile.yaml` so wrappers and sync commands use the selected
-capabilities.
+`requirements.txt` and `requirements-dev.txt`.
 
 Install pre-commit into the current repository environment:
 
@@ -52,55 +32,22 @@ To run all configured hooks manually:
 .\.venv\Scripts\pre-commit.exe run --all-files
 ```
 
-In this template repository, the `sync-dependencies` hook uses `uv` because the
-template itself is maintained with `pyproject.toml` and `uv.lock`.
-
 Reference: https://pre-commit.com/
 
 ## Refresh or Change the Environment
 
-To refresh the local uv environment after editing dependencies:
+To refresh the local environment after editing dependencies:
 
 ```powershell
 .\scripts\windows\update_venv.ps1
 ```
 
-To enable cloud dependencies, set
-`capabilities.infrastructure.terraform.enabled: true` in
-`.template-profile.yaml`, then run:
+To sync only runtime dependencies (skip development tooling):
 
 ```powershell
-.\scripts\windows\update_venv.ps1
+.\scripts\windows\setup_env.ps1 -NoDev
+.\scripts\windows\update_venv.ps1 -NoDev
 ```
-
-For uv-based hosts, `.template-profile.yaml` is the active manifest. Enable or
-disable capabilities there, then run `update_venv.ps1`; transitive capability
-dependencies determine the extras and groups synchronized by uv.
-
-## Use Make On Windows
-
-If `make.exe` is not available in `PATH`, use the Windows wrapper:
-
-```powershell
-.\scripts\windows\run_make.ps1 test
-.\scripts\windows\run_make.ps1 uv-init
-.\scripts\windows\run_make.ps1 uv-update
-```
-
-To point at a specific `make.exe` explicitly:
-
-```powershell
-.\scripts\windows\run_make.ps1 -MakePath 'C:\custom\make.exe' test
-```
-
-For installation details and corporate/manual make resolution, see
-[make_install.md](make_install.md). For ready-to-copy command examples, see
-[make_cheatlist.md](make_cheatlist.md).
-
-## uv Installation and Validation
-
-For uv installation paths, corporate/manual workflows, and the package refresh
-warning for uv-based hosts, see [uv_install.md](uv_install.md).
 
 ## Install This Template Into Another Repo
 
@@ -120,14 +67,6 @@ Install the template with an explicit target path:
 
 ```powershell
 .\.venv\Scripts\python.exe install_windows.py --target C:\path\to\target-repo
-```
-
-Install and choose capabilities non-interactively:
-
-```powershell
-.\.venv\Scripts\python.exe install_windows.py --target C:\path\to\target-repo --enable languages:python
-.\.venv\Scripts\python.exe install_windows.py --target C:\path\to\target-repo --enable infrastructure:terraform
-.\.venv\Scripts\python.exe install_windows.py --target C:\path\to\target-repo --enable none
 ```
 
 Overwrite existing target files only when intentional:
@@ -152,11 +91,8 @@ are not copied to the target repository.
 
 The installer:
 
-- copies `pyproject.toml` and `uv.lock`
-- writes `.template-profile.yaml` with the complete capability catalog
-- keeps the template `uv` hook behavior
-- renders the `Makefile` to use the persisted capabilities by default
-- active capabilities determine all extras and dependency groups
+- copies `requirements.txt` and `requirements-dev.txt`
+- writes `.framework-version.json` to track the installed template version
 
-Packaging resolves runtime extras from the capabilities enabled in
-`.template-profile.yaml`.
+Packaging bundles the runtime `requirements.txt` alongside `src/` for
+deployment.

@@ -13,7 +13,7 @@ Keep Terraform declarative, and handle orchestration externally (CI/CD, scripts)
 ## Approaches
 
 - CI/CD pipelines (GitHub Actions)
-- Makefile commands
+- Explicit project scripts (`scripts/`)
 - Step Functions (for AWS workflows)
 
 ## Patterns

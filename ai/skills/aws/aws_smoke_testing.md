@@ -103,7 +103,7 @@ def aws_client():
     if not _TRUST_OK:
         warnings.warn(
             "truststore unavailable on Python 3.14+ — falling back to verify=False. "
-            "Install the `cloud` extra (uv sync --extra cloud) to restore certificate verification.",
+            "Install requirements.txt (pip install -r requirements.txt) to restore certificate verification.",
             stacklevel=2,
         )
         verify = False
@@ -186,7 +186,7 @@ Validates that AWS resources deployed by Terraform are accessible and correctly 
 
 ## Requirements
 
-- Python dependencies: `uv sync --extra cloud`
+- Python dependencies: `pip install -r requirements.txt`
 - AWS credentials in `infra/env/.env.credentials` (or as env vars)
 - Infrastructure deployed: `terraform -chdir=infra apply`
 

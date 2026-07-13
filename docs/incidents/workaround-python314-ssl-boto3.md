@@ -79,12 +79,12 @@ def enable_os_trust_store() -> bool:
 This helper lives in `tests/aws/conftest.py` (generated per the skill
 `ai/skills/aws/aws_smoke_testing.md`) and is called at module import time.
 
-`truststore` is declared in the `cloud` extra in `pyproject.toml`.
+`truststore` is declared in `requirements.txt` (cloud section).
 
 **Last-resort fallback:** if `truststore` is not installed on Python 3.14+, the
 `aws_client` fixture falls back to `verify=False` with `warnings.warn`. This keeps
 connections encrypted but removes server authentication — acceptable only as a stopgap.
-Run `uv sync --extra cloud` to restore full verification.
+Run `pip install -r requirements.txt` to restore full verification.
 
 ---
 
@@ -125,8 +125,8 @@ Run with:
 
 ## When to remove the workaround
 
-Remove `enable_os_trust_store()` from `conftest.py` and `truststore` from the `cloud`
-extra when the check script above outputs `NATIVE SSL: OK`. That indicates Python or
-AWS has resolved the underlying incompatibility.
+Remove `enable_os_trust_store()` from `conftest.py` and `truststore` from
+`requirements.txt` when the check script above outputs `NATIVE SSL: OK`. That
+indicates Python or AWS has resolved the underlying incompatibility.
 
 Also update `reusable/incidencias/known-issues.md` and mark the issue **Resolved**.

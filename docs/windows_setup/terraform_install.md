@@ -227,9 +227,8 @@ Recommended tooling for a reproducible AI-assisted Terraform workflow:
 
 * Terraform
 * AWS CLI
-* GNU Make
 * Python 3.12+
-* uv
+* pip
 * Git
 * VSCode
 * Claude Code

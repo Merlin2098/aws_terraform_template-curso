@@ -14,7 +14,6 @@ and **content fingerprints** for every framework-owned file:
   "framework_version": "0.2.0",
   "installed_at": "...",
   "include_structure": false,
-  "enabled_capabilities": ["languages:python"],
   "tree_digest": "a3f8…",
   "framework_manifest": {
     "AGENTS.md":              {"sha256": "b1c2…", "ownership": "managed"},
@@ -58,7 +57,7 @@ Each manifest entry carries an `ownership` value:
 | Value | Meaning |
 |---|---|
 | `managed` | Framework owns this file; overwritten on every update. |
-| `generated` | Rendered at install time (e.g. `.template-profile.yaml`); hash is of the rendered output. |
+| `append-only` | Copied once on first install; on update only missing entries are merged in (e.g. `.pre-commit-config.yaml`). |
 
 `src/`, `infra/`, `tests/`, and `specs/project/` are **host-owned** and never
 appear in the manifest — the installer never touches them.
@@ -101,7 +100,7 @@ version, or keep your edits as-is.
 
 ## When to Bump the Version
 
-Bump `pyproject.toml` `version` when:
+Bump the version in the `VERSION` file when:
 
 - You want a clear audit trail of what generation a host is running.
 - You are introducing a breaking change that requires re-running the installer.
@@ -130,7 +129,7 @@ python install_windows.py --target <path-to-host>
 | Force overwrite all framework files | `python install_windows.py --target <path> --force` |
 | Preview update (no writes) | `python install_windows.py --target <path> --dry-run` |
 | Preview force update | `python install_windows.py --target <path> --force --dry-run` |
-| Check current template version | `grep ^version pyproject.toml` |
+| Check current template version | `cat VERSION` |
 | Check host installed version | `cat <host>/.framework-version.json` |
 
 ## Architecture reference

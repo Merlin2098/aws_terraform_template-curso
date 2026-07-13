@@ -23,7 +23,7 @@ CMD ["src.jobs.handler.handler"]
 - Always place the Dockerfile at `docker/Dockerfile` — never in the project root or next to application code.
 - Use `public.ecr.aws/lambda/python:3.12` (or the target version) — not `python:3.12-slim`. The Lambda base image ships the RIC; generic images do not.
 - `CMD` is the dotted module path to the handler function, not a shell command.
-- Keep `requirements-lambda.txt` minimal — only packages the handler directly imports. Do not copy from `pyproject.toml` dev/cloud extras.
+- Keep `requirements-lambda.txt` minimal — only packages the handler directly imports. Do not copy the full `requirements.txt`/`requirements-dev.txt`.
 
 ---
 

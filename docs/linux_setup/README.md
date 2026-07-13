@@ -3,12 +3,6 @@
 This guide prepares an Ubuntu-like Linux machine to use this template and to
 install it into another repository.
 
-Use this Linux documentation set in this order:
-
-1. `README.md` for the general operational flow
-2. [uv_install.md](uv_install.md) for uv installation and manual/corporate usage
-3. [make_cheatlist.md](make_cheatlist.md) for day-to-day `make` command examples
-
 ## Prepare the Template Repository
 
 From the repository root:
@@ -17,19 +11,13 @@ From the repository root:
 ./scripts/linux/setup_env.sh
 ```
 
-This Linux wrapper resolves Python automatically, validates `uv`, and delegates
-the environment sync to `scripts/run_uv_sync.py`.
+This Linux wrapper resolves Python automatically, creates `.venv` with
+`python -m venv`, and installs dependencies with `pip`.
 
-By default, the local uv workflow installs:
+By default, the setup installs:
 
-- the shared base dependencies from `pyproject.toml`
-- the `dev-local` dependency group
-
-The cloud uv workflow installs:
-
-- the shared base dependencies from `pyproject.toml`
-- the `local` and `cloud` optional dependency sets
-- the `dev-local` and `dev-cloud` dependency groups
+- the runtime dependencies from `requirements.txt`
+- the development dependencies from `requirements-dev.txt`
 
 Install pre-commit into the current repository environment:
 
@@ -46,47 +34,18 @@ To run all configured hooks manually:
 
 ## Refresh or Change the Environment
 
-To refresh the local uv environment after editing dependencies:
+To refresh the local environment after editing dependencies:
 
 ```bash
 ./scripts/linux/update_venv.sh
 ```
 
-To scale the host to cloud capabilities, edit `.template-profile.yaml` and set:
-
-```yaml
-capabilities:
-  infrastructure:
-    terraform:
-      enabled: true
-```
-
-Then run `./scripts/linux/update_venv.sh`. Capabilities and their transitive
-dependencies determine the extras and groups synchronized by uv.
-
-To sync only runtime dependencies:
+To sync only runtime dependencies (skip development tooling):
 
 ```bash
 ./scripts/linux/setup_env.sh --no-dev
 ./scripts/linux/update_venv.sh --no-dev
 ```
-
-## Use Make On Linux
-
-On Ubuntu and similar distributions, native `make` is the standard path:
-
-```bash
-make test
-make uv-init
-make uv-update
-```
-
-See [make_cheatlist.md](make_cheatlist.md) for ready-to-copy examples.
-
-## uv Installation and Validation
-
-For uv installation paths, manual/corporate workflows, and validation guidance,
-see [uv_install.md](uv_install.md).
 
 ## Install This Template Into Another Repo
 
@@ -100,14 +59,6 @@ Install the template with an explicit target path:
 
 ```bash
 python3 install_linux.py --target /path/to/target-repo
-```
-
-Install and choose capabilities non-interactively:
-
-```bash
-python3 install_linux.py --target /path/to/target-repo --enable languages:python
-python3 install_linux.py --target /path/to/target-repo --enable infrastructure:terraform
-python3 install_linux.py --target /path/to/target-repo --enable none
 ```
 
 Overwrite existing target files only when intentional:

@@ -16,7 +16,6 @@ basics:
 
 * how Python packaging and deployment bundles should work
 * how SQL, config, infrastructure, and tests should be organized
-* how dependencies should follow explicit project capabilities
 * how AI guidance files should live in the repo without becoming runtime logic
 * how to support Windows-restricted environments alongside standard shell flows
 * how project contracts (specs) should be separated from patterns (skills) and hard rules (principles)
@@ -29,23 +28,22 @@ simple operational model that can be copied into a host repository.
 The template currently supports:
 
 * installation into another repository through Windows and Linux installer entrypoints
-* host setup with `uv`
-* capability-driven dependency selection
+* host setup with `pip` and `requirements.txt`
 * optional copying of `src/`, `infra/`, and `tests/`
 * a `specs/` layer with a clear separation between template-owned specs (`specs/template/`) and host-authored specs (`specs/project/`)
 * an opt-in remote Terraform backend example using S3 native locking (no DynamoDB)
 * explicit project commands for packaging, tests, and AI refresh
-* Windows corporate workflows where `make.exe` may not be available in `PATH`
+* Windows and Linux setup wrappers for creating and updating the virtual environment
 
 There is no runtime dependency on generated AI context, no skill orchestration,
 and no AI logic in execution.
 
 ## How It Works
 
-At a high level, teams use this template in four steps:
+At a high level, teams use this template in three steps:
 
 1. Install the template into a host repository.
-2. Choose the capabilities needed by the host project.
+2. Set up the Python virtual environment with `pip`.
 3. Use explicit commands for packaging, tests, AI refresh, and Terraform work.
 
 ## Structure
@@ -68,24 +66,21 @@ tests/                 Lightweight validation
 ## Common Commands
 
 ```bash
-make package
-make test
-make ai-refresh
+python scripts/package.py
+python scripts/testing/run_pytest.py
+python scripts/hooks/ai_refresh.py
 ./scripts/linux/setup_env.sh
 ./scripts/linux/update_venv.sh
 ./scripts/windows/setup_env.ps1
 ./scripts/windows/update_venv.ps1
-./scripts/windows/run_make.ps1 test
-python3 scripts/hooks/ai_refresh.py
 python install_windows.py --target /path/to/repo --dry-run
 python3 install_linux.py --target /path/to/repo --dry-run
 terraform -chdir=infra init
 terraform -chdir=infra plan
 ```
 
-For Linux setup, including Ubuntu-style `uv` and `make` usage, see
-`docs/linux_setup/`. For Windows-specific `make` usage, including corporate
-environments where `make.exe` is not in `PATH`, see `docs/windows_setup/`.
+For Linux setup, see `docs/linux_setup/`. For Windows-specific setup, see
+`docs/windows_setup/`.
 
 For Terraform design guardrails used by this template and intended host
 repositories, see `docs/terra_principles.md`.
@@ -100,9 +95,6 @@ The template is installed into a host repository with:
 Both installers can:
 
 * preview changes with `--dry-run`
-* enable capabilities with repeatable `--enable category:name`
-* enable every capability by leaving the interactive selection empty
-* explicitly enable none with `--enable none`
 * optionally include the starter `src/`, `infra/`, and `tests/` trees
 
 The installer copies template files into the host repository, but it does not:
@@ -118,49 +110,34 @@ setup wrappers under `scripts/linux/` or `scripts/windows/`.
 
 ## Dependency Model
 
-The template manages host dependencies with `uv`:
+The template manages host dependencies with `pip`:
 
-* the installer copies `pyproject.toml` and `uv.lock`
-* the installer persists the complete active host catalog in
-  `.template-profile.yaml`; capabilities can be enabled later without
-  reinstalling the template
-* the `sync-dependencies` hook resolves extras and groups from active capabilities
-* transitive capability dependencies contribute their own extras and groups
-* `dependency_policy.include_dev: false` omits development groups
+* the installer copies `requirements.txt` (runtime) and `requirements-dev.txt` (testing/linting)
+* `python -m venv .venv` creates the virtual environment
+* `pip install -r requirements.txt` installs runtime dependencies; add
+  `-r requirements-dev.txt` for development tooling
 
 ## Linux Workflow
 
-Linux support includes setup and maintenance helpers under `scripts/linux/`.
+Linux support includes setup and maintenance helpers under `scripts/linux/`:
 
-On Ubuntu and similar distributions, native `make` is the standard path and the
-repository provides explicit shell wrappers for uv environment setup:
-
-* `./scripts/linux/setup_env.sh`
-* `./scripts/linux/update_venv.sh`
-* `make uv-init`
-* `make uv-update`
-* `make test`
+* `./scripts/linux/setup_env.sh` — creates `.venv` and installs dependencies
+* `./scripts/linux/update_venv.sh` — updates dependencies in an existing `.venv`
 
 Detailed setup and day-to-day command references live in:
 
 * `docs/linux_setup/README.md`
-* `docs/linux_setup/uv_install.md`
-* `docs/linux_setup/make_cheatlist.md`
 
 ## Windows Workflow
 
-Windows support includes setup and maintenance helpers under `scripts/windows/`.
+Windows support includes setup and maintenance helpers under `scripts/windows/`:
 
-In standard environments, teams can use normal `make` commands when `make` is
-available in `PATH`. In restricted corporate environments, the repository also
-supports a PowerShell wrapper flow through `scripts/windows/run_make.ps1`.
+* `.\scripts\windows\setup_env.ps1` — creates `.venv` and installs dependencies
+* `.\scripts\windows\update_venv.ps1` — updates dependencies in an existing `.venv`
 
 Detailed setup and day-to-day command references live in:
 
 * `docs/windows_setup/README.md`
-* `docs/windows_setup/make_install.md`
-* `docs/windows_setup/uv_install.md`
-* `docs/windows_setup/make_cheatlist.md`
 
 ## AI Guidance Files
 
@@ -179,8 +156,6 @@ The `specs/` directory holds project contracts: short, durable documents that
 state what is true, expected, or invariant about the project. Contracts
 complement skills (patterns) and principles (hard rules) without overlapping
 them.
-
-`specs/` is copied independently of capability selection.
 
 The folder is split into two areas:
 

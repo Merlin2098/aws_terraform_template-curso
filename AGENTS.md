@@ -28,7 +28,6 @@ Use:
 * `ai/domains/index.md` for domain-based navigation across all skill areas
 * `ai/policies/global.md` for cross-domain policies (advisory and required)
 * `ai/context.yaml` as the authoritative AI context-generation configuration
-* `.template-profile.yaml` for active project capabilities and dependency policy
 * `specs/template/` for inherited contracts when that directory is present
 * `specs/project/` for project-authored specs when that directory is present
 
@@ -72,8 +71,9 @@ Use explicit project commands only.
 
 Preferred workflow:
 
-* use `make <target>` when `make` is available
-* on Windows, follow the documented wrapper flow under `docs/windows_setup/`
+* run scripts directly with `python scripts/<script>.py`
+* on Linux, use the documented wrapper flow under `scripts/linux/`
+* on Windows, use the documented wrapper flow under `scripts/windows/`
 * run Terraform commands directly and intentionally from `infra/`
 
 Do not introduce hidden automation.
@@ -82,11 +82,13 @@ Do not introduce hidden automation.
 
 ## Package Manager Awareness
 
-Projects using this guidance use `uv` for Python dependency management.
+Projects using this guidance use `pip` with `requirements.txt` for Python
+dependency management.
 
-Inspect `.template-profile.yaml`, `pyproject.toml`, and `uv.lock` to resolve
-active dependency extras and groups. Use the repository's documented `uv`
-wrappers or explicit `uv` commands.
+Inspect `requirements.txt` and `requirements-dev.txt` to resolve active
+dependencies. Use `python -m venv` to create the virtual environment and
+`pip install -r requirements.txt` (add `-r requirements-dev.txt` for
+development tooling).
 
 ---
 

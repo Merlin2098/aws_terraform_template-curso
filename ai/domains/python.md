@@ -46,9 +46,9 @@ Key global policies with strong Python implications:
 
 Package manager awareness (from `AGENTS.md`):
 
-- Inspect the repository before choosing a dependency workflow.
-- Follow `requirements*.txt` workflows when the host uses `pip`.
-- Follow `pyproject.toml` + `uv.lock` workflows when the host uses `uv`.
+- Dependencies are managed with `pip` and `requirements*.txt`.
+- Use `python -m venv` and `pip install -r requirements.txt` (add
+  `-r requirements-dev.txt` for development tooling).
 
 ---
 
