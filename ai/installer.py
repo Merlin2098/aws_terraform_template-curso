@@ -7,26 +7,16 @@ from __future__ import annotations
 
 import hashlib
 import json
-import re
 import shutil
 from datetime import datetime, timezone
 from pathlib import Path
 
-from ai.runtime.capability_registry import (
-    CapabilityDescriptor,
-    load_registry,
-)
-from ai.runtime.profile import PROFILE_FILENAME, profile_document, render_profile
-from ai.runtime.project_profile import parse_capability_id
-
 
 TEMPLATE_ROOT = Path(__file__).resolve().parents[1]
 TEMPLATE_GITIGNORE_PATH = TEMPLATE_ROOT / ".gitignore"
-TEMPLATE_PROFILE_PATH = Path(PROFILE_FILENAME)
+VERSION_PATH = Path("VERSION")
 OPTIONAL_TOP_LEVEL_DIRS = {"infra", "src", "tests"}
 OPTIONAL_EMPTY_DIRS = {"tests"}
-PYPROJECT_PATH = Path("pyproject.toml")
-UV_LOCK_PATH = Path("uv.lock")
 STATE_FILENAME = ".framework-version.json"
 HOST_OWNED_TOP_LEVEL = {"src", "infra", "tests"}
 HOST_OWNED_PATHS = {"specs/project"}
@@ -56,18 +46,14 @@ EXCLUDED_EXACT_FILES = {
     "install_windows.py",
     ".claude/settings.local.json",
     # Host-owned root files: never distributed or overwritten by the framework.
-    # Makefile and .claude/settings.json may be customised per host.
-    "Makefile",
-    "uv.lock",
+    # .claude/settings.json may be customised per host.
     ".claude/settings.json",
 }
 
 # Files that are copied once on first install (if absent) but are never
 # overwritten on update — only missing *entries* are merged in.
-# pyproject.toml: host manages its own dependencies, name, version.
 # .pre-commit-config.yaml: host may add its own hooks.
 APPEND_ONLY_FILES = {
-    "pyproject.toml",
     ".pre-commit-config.yaml",
 }
 # Entries added to the host .gitignore that are not in the template's own
@@ -114,16 +100,8 @@ def file_sha256(path: Path) -> str:
     return hashlib.sha256(_normalize_for_hash(raw)).hexdigest()
 
 
-def text_sha256(text: str) -> str:
-    """SHA-256 of an in-memory text string, with EOL normalization."""
-    raw = text.encode("utf-8")
-    return hashlib.sha256(_normalize_for_hash(raw)).hexdigest()
-
-
 def classify_ownership(relative: Path) -> str:
     """Return the ownership class for a framework-distributed path."""
-    if relative == TEMPLATE_PROFILE_PATH:
-        return OWNERSHIP_GENERATED
     if relative.as_posix() in APPEND_ONLY_FILES:
         return OWNERSHIP_APPEND_ONLY
     return OWNERSHIP_MANAGED
@@ -175,12 +153,11 @@ def _manifest_as_map(
 
 
 def framework_version() -> str:
-    pyproject = TEMPLATE_ROOT / "pyproject.toml"
-    text = pyproject.read_text(encoding="utf-8")
-    match = re.search(r'^version\s*=\s*"([^"]+)"', text, re.MULTILINE)
-    if not match:
-        raise RuntimeError(f"Could not find version in {pyproject}")
-    return match.group(1)
+    version_file = TEMPLATE_ROOT / "VERSION"
+    text = version_file.read_text(encoding="utf-8").strip()
+    if not text:
+        raise RuntimeError(f"Could not find version in {version_file}")
+    return text
 
 
 def is_framework_owned(relative: Path) -> bool:
@@ -194,8 +171,6 @@ def is_framework_owned(relative: Path) -> bool:
     for host_path in HOST_OWNED_PATHS:
         if rel_str == host_path or rel_str.startswith(host_path + "/"):
             return False
-    if relative == TEMPLATE_PROFILE_PATH:
-        return False
     return True
 
 
@@ -214,7 +189,6 @@ def write_state(
     *,
     version: str,
     include_structure: bool,
-    enabled_capabilities: list[str],
     manifest: dict[str, dict],
     tree_digest: str,
     dry_run: bool,
@@ -225,7 +199,6 @@ def write_state(
         "framework_version": version,
         "installed_at": datetime.now(timezone.utc).isoformat(),
         "include_structure": include_structure,
-        "enabled_capabilities": enabled_capabilities,
         "tree_digest": tree_digest,
         "framework_manifest": {k: manifest[k] for k in sorted(manifest)},
     }
@@ -305,52 +278,6 @@ def prompt_include_structure() -> bool:
         print("Please answer yes or no.")
 
 
-def available_capability_ids(
-    registry: dict[str, dict[str, CapabilityDescriptor]] | None = None,
-) -> list[str]:
-    registry = registry or load_registry(TEMPLATE_ROOT)
-    return [
-        f"{category}:{name}"
-        for category in sorted(registry)
-        for name in sorted(registry[category])
-    ]
-
-
-def prompt_enabled_capabilities(
-    registry: dict[str, dict[str, CapabilityDescriptor]] | None = None,
-) -> list[str]:
-    registry = registry or load_registry(TEMPLATE_ROOT)
-    identifiers = available_capability_ids(registry)
-    print("Available capabilities:")
-    for index, identifier in enumerate(identifiers, start=1):
-        print(f"  {index}. {identifier}")
-    selected = input(
-        "Capabilities to enable (comma-separated numbers, empty for all, "
-        "'none' for none): "
-    ).strip()
-    if not selected:
-        return available_capability_ids(registry)
-    if selected.strip().lower() == "none":
-        return validate_enabled_capabilities(["none"], registry)
-
-    values: list[str] = []
-    for token in selected.split(","):
-        token = token.strip()
-        if not token:
-            continue
-        if not token.isdigit():
-            raise ValueError(f"Invalid capability number '{token}'.")
-        position = int(token)
-        if not 1 <= position <= len(identifiers):
-            raise ValueError(
-                f"Capability number {position} is out of range "
-                f"(1-{len(identifiers)})."
-            )
-        values.append(identifiers[position - 1])
-
-    return validate_enabled_capabilities(values, registry)
-
-
 def validate_target(target: Path) -> Path:
     target = target.expanduser().resolve()
     template = TEMPLATE_ROOT.resolve()
@@ -361,47 +288,6 @@ def validate_target(target: Path) -> Path:
         raise ValueError("Target cannot be inside the template repository.")
 
     return target
-
-
-def validate_enabled_capabilities(
-    values: list[str],
-    registry: dict[str, dict[str, CapabilityDescriptor]] | None = None,
-) -> list[str]:
-    registry = registry or load_registry(TEMPLATE_ROOT)
-    if not values:
-        return available_capability_ids(registry)
-    lowered = [value.strip().lower() for value in values]
-    if "none" in lowered:
-        if len(lowered) != 1:
-            raise ValueError("'none' cannot be combined with other capabilities.")
-        return []
-
-    normalized: list[str] = []
-    for value in lowered:
-        category, name = parse_capability_id(value)
-        if category not in registry or name not in registry[category]:
-            raise ValueError(
-                f"Unknown capability '{category}:{name}'. Available values: "
-                f"{', '.join(available_capability_ids(registry))}."
-            )
-        identifier = f"{category}:{name}"
-        if identifier not in normalized:
-            normalized.append(identifier)
-    return normalized
-
-
-def capability_selection(values: list[str]) -> dict[str, list[str]]:
-    selected: dict[str, list[str]] = {}
-    for value in values:
-        category, name = parse_capability_id(value)
-        selected.setdefault(category, []).append(name)
-    return selected
-
-
-def should_copy_package_file(relative: Path) -> bool:
-    if relative.name.startswith("requirements"):
-        return False
-    return True
 
 
 def should_copy_structure_path(relative: Path, include_structure: bool) -> bool:
@@ -432,9 +318,6 @@ def iter_template_files(
             if not should_copy_structure_path(relative, include_structure):
                 ignored.append(path)
                 continue
-            if not should_copy_package_file(relative):
-                ignored.append(path)
-                continue
             if is_excluded(path):
                 ignored.append(path)
                 continue
@@ -449,45 +332,7 @@ def iter_template_files(
     return copied_candidates, ignored
 
 
-def render_target_file(
-    source_text: str,
-    *,
-    relative: Path,
-    capabilities: dict[str, list[str]] | None = None,
-    registry: dict[str, dict[str, CapabilityDescriptor]] | None = None,
-) -> str:
-    if relative == TEMPLATE_PROFILE_PATH:
-        registry = registry or load_registry(TEMPLATE_ROOT)
-        return render_profile(
-            profile_document(
-                registry,
-                enabled=capabilities or {},
-            )
-        )
-    return source_text
-
-
-def copy_template_file(
-    source_path: Path,
-    destination: Path,
-    *,
-    relative: Path,
-    capabilities: dict[str, list[str]] | None = None,
-    registry: dict[str, dict[str, CapabilityDescriptor]] | None = None,
-) -> None:
-    if relative == TEMPLATE_PROFILE_PATH:
-        source_text = source_path.read_text(encoding="utf-8")
-        destination.write_text(
-            render_target_file(
-                source_text,
-                relative=relative,
-                capabilities=capabilities,
-                registry=registry,
-            ),
-            encoding="utf-8",
-        )
-        shutil.copystat(source_path, destination)
-        return
+def copy_template_file(source_path: Path, destination: Path) -> None:
     shutil.copy2(source_path, destination)
 
 
@@ -575,75 +420,6 @@ def create_optional_empty_dirs(
 # ---------------------------------------------------------------------------
 
 
-def _merge_pyproject(template_path: Path, host_path: Path, dry_run: bool) -> list[str]:
-    """Merge missing top-level TOML sections from template into host pyproject.toml.
-
-    Only adds sections the host is missing entirely (e.g. [tool.ruff],
-    [tool.pytest.ini_options]).  Never modifies [project] or existing sections.
-    Returns list of added section headers.
-    """
-    import tomllib
-
-    template_text = template_path.read_text(encoding="utf-8")
-    host_text = host_path.read_text(encoding="utf-8")
-
-    try:
-        template_doc = tomllib.loads(template_text)
-        host_doc = tomllib.loads(host_text)
-    except Exception:
-        return []  # malformed TOML — skip silently
-
-    # Never touch [project] — that belongs entirely to the host.
-    # Only consider [tool.*] sections and [build-system].
-    NEVER_TOUCH = {"project", "project.optional-dependencies", "project.scripts"}
-    added: list[str] = []
-
-    additions: list[str] = []
-    for section, value in template_doc.items():
-        if section in NEVER_TOUCH:
-            continue
-        if section not in host_doc:
-            # Append the raw section block from the template text.
-            # Extract the block by finding the header in the template source.
-            block = _extract_toml_section(template_text, section)
-            if block:
-                additions.append(block)
-                added.append(f"[{section}]")
-
-    if additions and not dry_run:
-        current = host_path.read_text(encoding="utf-8")
-        sep = "\n" if current.endswith("\n") else "\n\n"
-        host_path.write_text(current + sep + "\n".join(additions), encoding="utf-8")
-
-    return added
-
-
-def _extract_toml_section(toml_text: str, section: str) -> str:
-    """Extract a complete top-level TOML section block as a string."""
-    import re
-
-    header = f"[{section}]"
-    # Find the header line
-    lines = toml_text.splitlines(keepends=True)
-    start = None
-    for i, line in enumerate(lines):
-        if line.strip() == header:
-            start = i
-            break
-    if start is None:
-        return ""
-
-    # Collect lines until the next top-level section header or EOF.
-    block_lines = [lines[start]]
-    for line in lines[start + 1 :]:
-        stripped = line.strip()
-        # A new top-level section: [name] but not [[array]] or [section.sub]
-        if re.match(r"^\[[A-Za-z]", stripped) and not stripped.startswith("[["):
-            break
-        block_lines.append(line)
-    return "".join(block_lines).rstrip() + "\n"
-
-
 def _merge_precommit(template_path: Path, host_path: Path, dry_run: bool) -> list[str]:
     """Merge missing hook ids from template .pre-commit-config.yaml into host.
 
@@ -671,7 +447,8 @@ def _merge_precommit(template_path: Path, host_path: Path, dry_run: bool) -> lis
     added: list[str] = []
     for repo in template_repos:
         missing_hooks = [
-            h for h in repo.get("hooks", [])
+            h
+            for h in repo.get("hooks", [])
             if h.get("id") and h["id"] not in existing_ids
         ]
         if not missing_hooks:
@@ -681,9 +458,7 @@ def _merge_precommit(template_path: Path, host_path: Path, dry_run: bool) -> lis
             continue
         # Find or create the matching repo entry in the host.
         repo_url = repo.get("repo", "local")
-        host_repo = next(
-            (r for r in host_repos if r.get("repo") == repo_url), None
-        )
+        host_repo = next((r for r in host_repos if r.get("repo") == repo_url), None)
         if host_repo is None:
             host_repos.append({"repo": repo_url, "hooks": missing_hooks})
         else:
@@ -692,8 +467,9 @@ def _merge_precommit(template_path: Path, host_path: Path, dry_run: bool) -> lis
     if added and not dry_run:
         host_doc["repos"] = host_repos
         host_path.write_text(
-            yaml.safe_dump(host_doc, sort_keys=False, default_flow_style=False,
-                           allow_unicode=True),
+            yaml.safe_dump(
+                host_doc, sort_keys=False, default_flow_style=False, allow_unicode=True
+            ),
             encoding="utf-8",
         )
 
@@ -709,12 +485,9 @@ def merge_append_only_file(
 ) -> list[str]:
     """Dispatch to the right merge function for an append-only file.
 
-    Returns a list of added items (section names or hook ids).
+    Returns a list of added hook ids.
     """
-    rel = relative.as_posix()
-    if rel == "pyproject.toml":
-        return _merge_pyproject(template_path, host_path, dry_run)
-    if rel == ".pre-commit-config.yaml":
+    if relative.as_posix() == ".pre-commit-config.yaml":
         return _merge_precommit(template_path, host_path, dry_run)
     return []
 
@@ -724,32 +497,7 @@ def merge_append_only_file(
 # ---------------------------------------------------------------------------
 
 
-def _hash_for_template_file(
-    source_path: Path,
-    *,
-    relative: Path,
-    capabilities: dict[str, list[str]] | None = None,
-    registry: dict[str, dict[str, CapabilityDescriptor]] | None = None,
-) -> str:
-    """Return the sha256 that will be written to the host for this template file."""
-    if relative == TEMPLATE_PROFILE_PATH:
-        source_text = source_path.read_text(encoding="utf-8")
-        rendered = render_target_file(
-            source_text,
-            relative=relative,
-            capabilities=capabilities,
-            registry=registry,
-        )
-        return text_sha256(rendered)
-    return file_sha256(source_path)
-
-
-def _build_template_manifest(
-    candidates: list[Path],
-    *,
-    capabilities: dict[str, list[str]] | None = None,
-    registry: dict[str, dict[str, CapabilityDescriptor]] | None = None,
-) -> dict[str, dict]:
+def _build_template_manifest(candidates: list[Path]) -> dict[str, dict]:
     """Build {rel_posix: {sha256, ownership}} for all framework-owned candidates."""
     manifest: dict[str, dict] = {}
     for source_path in candidates:
@@ -757,14 +505,8 @@ def _build_template_manifest(
         if not is_framework_owned(relative):
             continue
         rel_text = relative.as_posix()
-        sha = _hash_for_template_file(
-            source_path,
-            relative=relative,
-            capabilities=capabilities,
-            registry=registry,
-        )
         manifest[rel_text] = {
-            "sha256": sha,
+            "sha256": file_sha256(source_path),
             "ownership": classify_ownership(relative),
         }
     return manifest
@@ -818,13 +560,8 @@ def install_template(
     dry_run: bool,
     *,
     include_structure: bool,
-    enabled_capabilities: list[str] | None = None,
 ) -> dict[str, list[str]]:
     target = validate_target(target)
-    registry = load_registry(TEMPLATE_ROOT)
-    selections = list(enabled_capabilities or [])
-    selections = validate_enabled_capabilities(selections, registry)
-    capabilities = capability_selection(selections)
     candidates, ignored_paths = iter_template_files(
         include_structure=include_structure,
     )
@@ -854,19 +591,11 @@ def install_template(
         if dry_run:
             continue
 
-        copy_template_file(
-            source_path,
-            destination,
-            relative=relative,
-            capabilities=capabilities,
-            registry=registry,
-        )
+        copy_template_file(source_path, destination)
     gitignore_updates = append_target_gitignore(target, dry_run=dry_run)
 
     # Build manifest with content fingerprints (ADR-FW-003).
-    manifest = _build_template_manifest(
-        candidates, capabilities=capabilities, registry=registry
-    )
+    manifest = _build_template_manifest(candidates)
     # Files that diverge from the template source after writing must be hashed
     # from the actual on-disk result, not from the template source.
     _patch_gitignore_hash(manifest, target, dry_run=dry_run)
@@ -877,7 +606,6 @@ def install_template(
         target,
         version=version,
         include_structure=include_structure,
-        enabled_capabilities=selections,
         manifest=manifest,
         tree_digest=tree_digest,
         dry_run=dry_run,
@@ -902,7 +630,6 @@ def update_template(
     *,
     force: bool = False,
     dry_run: bool = False,
-    enabled_capabilities: list[str] | None = None,
     include_structure: bool | None = None,
 ) -> dict:
     target = validate_target(target)
@@ -918,24 +645,14 @@ def update_template(
         if include_structure is not None
         else state.get("include_structure", False)
     )
-    resolved_capabilities = (
-        enabled_capabilities
-        if enabled_capabilities is not None
-        else state.get("enabled_capabilities", [])
-    )
 
     current_version = framework_version()
     previous_version = state.get("framework_version", "unknown")
 
-    registry = load_registry(TEMPLATE_ROOT)
-    selections = validate_enabled_capabilities(resolved_capabilities, registry)
-    capabilities = capability_selection(selections)
     candidates, _ = iter_template_files(include_structure=resolved_include_structure)
 
     # Build the template-side manifest (what the framework *wants* the host to have).
-    template_manifest = _build_template_manifest(
-        candidates, capabilities=capabilities, registry=registry
-    )
+    template_manifest = _build_template_manifest(candidates)
     # Files that diverge from the template source after writing must use the
     # host's actual on-disk hash so tree_digest is comparable to state (ADR-FW-003).
     _patch_gitignore_hash(template_manifest, target, dry_run=False)
@@ -987,13 +704,7 @@ def update_template(
                 updated.append(relative_text)
                 _ensure_destination_parent(target, destination, created_dirs, dry_run)
                 if not dry_run:
-                    copy_template_file(
-                        source_path,
-                        destination,
-                        relative=relative,
-                        capabilities=capabilities,
-                        registry=registry,
-                    )
+                    copy_template_file(source_path, destination)
             continue
 
         ownership = template_manifest[relative_text]["ownership"]
@@ -1005,13 +716,7 @@ def update_template(
                 updated.append(relative_text)
                 _ensure_destination_parent(target, destination, created_dirs, dry_run)
                 if not dry_run:
-                    copy_template_file(
-                        source_path,
-                        destination,
-                        relative=relative,
-                        capabilities=capabilities,
-                        registry=registry,
-                    )
+                    copy_template_file(source_path, destination)
             else:
                 added = merge_append_only_file(
                     source_path, destination, relative=relative, dry_run=dry_run
@@ -1036,13 +741,7 @@ def update_template(
             updated.append(relative_text)
             _ensure_destination_parent(target, destination, created_dirs, dry_run)
             if not dry_run:
-                copy_template_file(
-                    source_path,
-                    destination,
-                    relative=relative,
-                    capabilities=capabilities,
-                    registry=registry,
-                )
+                copy_template_file(source_path, destination)
         elif classification == "locally-modified":
             locally_modified_paths.append(relative_text)
         elif classification == "conflict":
@@ -1066,14 +765,15 @@ def update_template(
 
     # Patch on-disk hashes for files whose content diverges from the template source.
     _patch_gitignore_hash(template_manifest, target, dry_run=dry_run)
-    _patch_host_file_hashes(template_manifest, target, APPEND_ONLY_FILES, dry_run=dry_run)
+    _patch_host_file_hashes(
+        template_manifest, target, APPEND_ONLY_FILES, dry_run=dry_run
+    )
     template_tree_digest = compute_tree_digest(template_manifest)
 
     write_state(
         target,
         version=current_version,
         include_structure=resolved_include_structure,
-        enabled_capabilities=selections,
         manifest=template_manifest,
         tree_digest=template_tree_digest,
         dry_run=dry_run,
@@ -1175,7 +875,10 @@ def print_summary(summary: dict, dry_run: bool) -> None:
         for label, values in [
             ("Updated", updated),
             ("Locally modified (use --force to overwrite)", locally_modified),
-            ("Conflict — host and template both changed (use --force to overwrite)", conflicts),
+            (
+                "Conflict — host and template both changed (use --force to overwrite)",
+                conflicts,
+            ),
             ("Skipped (host-owned)", skipped),
             ("Deleted (orphans)", deleted),
             (".gitignore additions", gitignore_updates),

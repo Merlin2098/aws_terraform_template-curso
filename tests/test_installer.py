@@ -1,11 +1,9 @@
 from __future__ import annotations
 
 import json
-import sys
 from pathlib import Path
 
 import pytest
-import yaml
 
 from ai.installer import (
     STATE_FILENAME,
@@ -16,13 +14,8 @@ from ai.installer import (
     framework_version,
     install_template,
     is_framework_owned,
-    read_state,
-    text_sha256,
     update_template,
-    validate_enabled_capabilities,
 )
-from ai.runtime.capability_registry import load_registry
-from ai.runtime.project_profile import resolve_project_profile
 
 
 REPO_ROOT = Path(__file__).resolve().parents[1]
@@ -31,8 +24,8 @@ REPO_ROOT = Path(__file__).resolve().parents[1]
 def test_existing_host_file_is_left_untouched(tmp_path: Path) -> None:
     target = tmp_path / "host-existing"
     target.mkdir(parents=True)
-    custom_file = target / "pyproject.toml"
-    original = "[project]\nname = 'custom'\n"
+    custom_file = target / "requirements.txt"
+    original = "custom-package==1.0.0\n"
     custom_file.write_text(original, encoding="utf-8")
 
     install_template(
@@ -40,7 +33,6 @@ def test_existing_host_file_is_left_untouched(tmp_path: Path) -> None:
         force=False,
         dry_run=False,
         include_structure=False,
-        enabled_capabilities=["none"],
     )
 
     assert custom_file.read_text(encoding="utf-8") == original
@@ -59,7 +51,6 @@ def test_existing_host_gitignore_gets_only_missing_template_entries(
         force=False,
         dry_run=False,
         include_structure=False,
-        enabled_capabilities=["none"],
     )
 
     assert ".gitignore" in summary["skipped"]
@@ -69,18 +60,16 @@ def test_existing_host_gitignore_gets_only_missing_template_entries(
     assert "data/" in summary["gitignore_updates"]
     assert "/prompt/" in summary["gitignore_updates"]
     assert ".claude/settings.local.json" in summary["gitignore_updates"]
-    assert "Makefile" not in summary["gitignore_updates"]
 
     gitignore = host_gitignore.read_text(encoding="utf-8")
     assert "custom.tmp" in gitignore
     assert gitignore.count(".ai/") == 1
     assert ".venv/" in gitignore
     assert "ai/" in gitignore
-    assert "Makefile" not in gitignore
 
 
-def test_install_without_selection_enables_full_catalog(tmp_path: Path) -> None:
-    target = tmp_path / "host-all-capabilities"
+def test_install_copies_requirements_files(tmp_path: Path) -> None:
+    target = tmp_path / "host-requirements"
 
     summary = install_template(
         target=target,
@@ -89,47 +78,10 @@ def test_install_without_selection_enables_full_catalog(tmp_path: Path) -> None:
         include_structure=False,
     )
 
-    assert "pyproject.toml" in summary["copied"]
-    # uv.lock and Makefile are host-owned — never distributed by the framework.
-    assert "uv.lock" not in summary["copied"]
-    assert "Makefile" not in summary["copied"]
-    assert not (target / "uv.lock").exists()
-    assert not (target / "Makefile").exists()
-    assert ".template-profile.yaml" in summary["copied"]
-    assert (target / "pyproject.toml").exists()
-    profile = yaml.safe_load(
-        (target / ".template-profile.yaml").read_text(encoding="utf-8")
-    )
-    assert profile["capabilities"]["languages"]["python"]["enabled"] is True
-    assert profile["capabilities"]["cloud"]["aws"]["enabled"] is True
-    assert profile["capabilities"]["business"]["saas"]["enabled"] is True
-    resolved = resolve_project_profile(target)
-    assert resolved.disabled_capabilities == ()
-    assert set(resolved.explicit_capabilities) == set(
-        validate_enabled_capabilities([], load_registry(REPO_ROOT))
-    )
-
-
-def test_none_selection_disables_full_catalog(tmp_path: Path) -> None:
-    target = tmp_path / "host-no-capabilities"
-
-    install_template(
-        target=target,
-        force=False,
-        dry_run=False,
-        include_structure=False,
-        enabled_capabilities=["none"],
-    )
-
-    # Makefile is host-owned and no longer distributed by the framework.
-    assert not (target / "Makefile").exists()
-    template_profile = yaml.safe_load(
-        (target / ".template-profile.yaml").read_text(encoding="utf-8")
-    )
-
-    assert "environment" not in template_profile
-    assert template_profile["capabilities"]["languages"]["python"]["enabled"] is False
-    assert template_profile["capabilities"]["cloud"]["aws"]["enabled"] is False
+    assert "requirements.txt" in summary["copied"]
+    assert "requirements-dev.txt" in summary["copied"]
+    assert (target / "requirements.txt").exists()
+    assert (target / "requirements-dev.txt").exists()
 
 
 def test_include_structure_creates_empty_tests_dir_without_template_tests(
@@ -142,7 +94,6 @@ def test_include_structure_creates_empty_tests_dir_without_template_tests(
         force=False,
         dry_run=False,
         include_structure=True,
-        enabled_capabilities=["none"],
     )
 
     tests_dir = target / "tests"
@@ -161,7 +112,6 @@ def test_without_structure_does_not_create_tests_dir(tmp_path: Path) -> None:
         force=False,
         dry_run=False,
         include_structure=False,
-        enabled_capabilities=["none"],
     )
 
     assert not (target / "tests").exists()
@@ -175,7 +125,6 @@ def test_settings_local_json_is_not_copied_to_host(tmp_path: Path) -> None:
         force=False,
         dry_run=False,
         include_structure=False,
-        enabled_capabilities=["none"],
     )
 
     assert ".claude/settings.local.json" not in summary["copied"]
@@ -196,7 +145,6 @@ def test_docs_directory_is_not_copied_to_host(tmp_path: Path) -> None:
         force=False,
         dry_run=False,
         include_structure=False,
-        enabled_capabilities=["none"],
     )
 
     assert not any(p.startswith("docs/") or p == "docs" for p in summary["copied"])
@@ -204,129 +152,19 @@ def test_docs_directory_is_not_copied_to_host(tmp_path: Path) -> None:
     assert not (target / "docs").exists()
 
 
-def test_install_with_none_keeps_full_catalog_files(tmp_path: Path) -> None:
-    target = tmp_path / "host-no-saas"
+def test_install_copies_all_skill_domains(tmp_path: Path) -> None:
+    target = tmp_path / "host-skills"
 
     summary = install_template(
         target=target,
         force=False,
         dry_run=False,
         include_structure=False,
-        enabled_capabilities=["none"],
     )
 
     assert "ai/domains/saas.md" in summary["copied"]
     assert "ai/skills/saas/auth.md" in summary["copied"]
     assert (target / "ai" / "domains" / "saas.md").exists()
-
-
-def test_install_with_saas_capability_includes_saas_paths(tmp_path: Path) -> None:
-    target = tmp_path / "host-saas"
-
-    summary = install_template(
-        target=target,
-        force=False,
-        dry_run=False,
-        include_structure=False,
-        enabled_capabilities=["business:saas"],
-    )
-
-    assert "ai/domains/saas.md" in summary["copied"]
-    assert "ai/skills/saas/auth.md" in summary["copied"]
-    assert (target / "ai" / "domains" / "saas.md").exists()
-
-
-def test_install_with_saas_capability_writes_typed_capabilities_block(
-    tmp_path: Path,
-) -> None:
-    target = tmp_path / "host-uv-saas"
-
-    install_template(
-        target=target,
-        force=False,
-        dry_run=False,
-        include_structure=False,
-        enabled_capabilities=["business:saas"],
-    )
-
-    template_profile = yaml.safe_load(
-        (target / ".template-profile.yaml").read_text(encoding="utf-8")
-    )
-
-    assert "environment" not in template_profile
-    assert template_profile["capabilities"]["business"]["saas"]["enabled"] is True
-    assert (
-        template_profile["capabilities"]["infrastructure"]["terraform"]["enabled"]
-        is False
-    )
-
-
-def test_install_with_none_writes_disabled_catalog_entries(
-    tmp_path: Path,
-) -> None:
-    target = tmp_path / "host-uv-no-saas"
-
-    install_template(
-        target=target,
-        force=False,
-        dry_run=False,
-        include_structure=False,
-        enabled_capabilities=["none"],
-    )
-
-    template_profile = yaml.safe_load(
-        (target / ".template-profile.yaml").read_text(encoding="utf-8")
-    )
-
-    assert template_profile["capabilities"]["business"]["saas"]["enabled"] is False
-    assert template_profile["capabilities"]["databases"]["supabase"]["enabled"] is False
-
-
-def test_validate_enabled_capabilities_accepts_multiple_categories() -> None:
-    registry = load_registry(REPO_ROOT)
-
-    assert validate_enabled_capabilities(["cloud:aws", "business:saas"], registry) == [
-        "cloud:aws",
-        "business:saas",
-    ]
-
-
-def test_validate_enabled_capabilities_rejects_unknown_value() -> None:
-    with pytest.raises(ValueError, match="Unknown capability"):
-        validate_enabled_capabilities(["cloud:azure"])
-
-
-def test_validate_enabled_capabilities_defaults_to_all() -> None:
-    registry = load_registry(REPO_ROOT)
-
-    assert validate_enabled_capabilities([], registry) == [
-        f"{category}:{name}"
-        for category in sorted(registry)
-        for name in sorted(registry[category])
-    ]
-
-
-def test_validate_enabled_capabilities_accepts_none() -> None:
-    assert validate_enabled_capabilities(["none"]) == []
-
-
-def test_validate_enabled_capabilities_rejects_none_with_other_values() -> None:
-    with pytest.raises(ValueError, match="cannot be combined"):
-        validate_enabled_capabilities(["none", "languages:python"])
-
-
-def test_run_uv_sync_parse_args_rejects_conflicting_dev_flags(monkeypatch) -> None:
-    import pytest
-    import scripts.run_uv_sync as run_uv_sync
-
-    monkeypatch.setattr(
-        sys,
-        "argv",
-        ["run_uv_sync.py", "init", "--include-dev", "--no-dev"],
-    )
-
-    with pytest.raises(SystemExit):
-        run_uv_sync.parse_args()
 
 
 # --- versioning & update_template tests ---
@@ -342,11 +180,10 @@ def test_framework_version_returns_semver_string() -> None:
 def test_is_framework_owned_classifies_correctly() -> None:
     assert is_framework_owned(Path("AGENTS.md")) is True
     assert is_framework_owned(Path("ai/skills/terraform/terraform_style.md")) is True
-    assert is_framework_owned(Path("scripts/run_uv_sync.py")) is True
+    assert is_framework_owned(Path("requirements.txt")) is True
     assert is_framework_owned(Path("src/jobs/my_job.py")) is False
     assert is_framework_owned(Path("infra/main.tf")) is False
     assert is_framework_owned(Path("tests/test_something.py")) is False
-    assert is_framework_owned(Path(".template-profile.yaml")) is False
     assert is_framework_owned(Path("specs/project/my_spec.md")) is False
 
 
@@ -358,7 +195,6 @@ def test_install_writes_framework_state(tmp_path: Path) -> None:
         force=False,
         dry_run=False,
         include_structure=False,
-        enabled_capabilities=["none"],
     )
 
     state_file = target / STATE_FILENAME
@@ -366,7 +202,7 @@ def test_install_writes_framework_state(tmp_path: Path) -> None:
     state = json.loads(state_file.read_text(encoding="utf-8"))
     assert state["framework_version"] == framework_version()
     assert state["include_structure"] is False
-    # manifest is now a dict {path: {sha256, ownership}} — ADR-FW-003
+    # manifest is a dict {path: {sha256, ownership}} — ADR-FW-003
     manifest = state["framework_manifest"]
     assert isinstance(manifest, dict)
     assert len(manifest) > 0
@@ -374,7 +210,6 @@ def test_install_writes_framework_state(tmp_path: Path) -> None:
     assert manifest["AGENTS.md"]["ownership"] == "managed"
     assert isinstance(manifest["AGENTS.md"]["sha256"], str)
     assert len(manifest["AGENTS.md"]["sha256"]) == 64  # sha256 hex
-    assert ".template-profile.yaml" not in manifest
     # tree_digest must be present and stable
     assert isinstance(state.get("tree_digest"), str)
     assert len(state["tree_digest"]) == 64
@@ -388,7 +223,6 @@ def test_install_dry_run_does_not_write_state(tmp_path: Path) -> None:
         force=False,
         dry_run=True,
         include_structure=False,
-        enabled_capabilities=["none"],
     )
 
     assert not (target / STATE_FILENAME).exists()
@@ -401,7 +235,6 @@ def test_update_overwrites_framework_owned_file(tmp_path: Path) -> None:
         force=False,
         dry_run=False,
         include_structure=False,
-        enabled_capabilities=["none"],
     )
 
     agents_md = target / "AGENTS.md"
@@ -421,7 +254,6 @@ def test_update_leaves_host_owned_file_untouched(tmp_path: Path) -> None:
         force=False,
         dry_run=False,
         include_structure=True,
-        enabled_capabilities=["none"],
     )
 
     host_file = target / "src" / "custom_job.py"
@@ -440,7 +272,6 @@ def test_update_deletes_orphaned_framework_file(tmp_path: Path) -> None:
         force=False,
         dry_run=False,
         include_structure=False,
-        enabled_capabilities=["none"],
     )
 
     # Plant a fake orphan: write the file and inject it into the saved manifest
@@ -450,15 +281,11 @@ def test_update_deletes_orphaned_framework_file(tmp_path: Path) -> None:
 
     state_file = target / STATE_FILENAME
     state = json.loads(state_file.read_text(encoding="utf-8"))
-    # manifest is now a dict — add the orphan entry
     manifest = state["framework_manifest"]
-    if isinstance(manifest, list):
-        manifest.append("ai/skills/obsolete_skill.md")
-    else:
-        manifest["ai/skills/obsolete_skill.md"] = {
-            "sha256": "deadbeef",
-            "ownership": "managed",
-        }
+    manifest["ai/skills/obsolete_skill.md"] = {
+        "sha256": "deadbeef",
+        "ownership": "managed",
+    }
     state["framework_manifest"] = manifest
     state_file.write_text(json.dumps(state, indent=2) + "\n", encoding="utf-8")
 
@@ -483,7 +310,6 @@ def test_update_idempotent_when_tree_digest_matches(tmp_path: Path) -> None:
         force=False,
         dry_run=False,
         include_structure=False,
-        enabled_capabilities=["none"],
     )
 
     summary = update_template(target=target, force=False, dry_run=False)
@@ -501,7 +327,6 @@ def test_update_dry_run_does_not_modify_files(tmp_path: Path) -> None:
         force=False,
         dry_run=False,
         include_structure=False,
-        enabled_capabilities=["none"],
     )
 
     agents_md = target / "AGENTS.md"
@@ -521,13 +346,6 @@ def test_file_sha256_normalises_crlf(tmp_path: Path) -> None:
     lf.write_bytes(b"hello\nworld\n")
     crlf.write_bytes(b"hello\r\nworld\r\n")
     assert file_sha256(lf) == file_sha256(crlf)
-
-
-def test_text_sha256_matches_file_sha256(tmp_path: Path) -> None:
-    content = "hello\nworld\n"
-    path = tmp_path / "file.txt"
-    path.write_text(content, encoding="utf-8")
-    assert text_sha256(content) == file_sha256(path)
 
 
 def test_compute_tree_digest_stable_across_calls(tmp_path: Path) -> None:
@@ -551,7 +369,6 @@ def test_install_writes_manifest_map_with_sha256_and_ownership(tmp_path: Path) -
         force=False,
         dry_run=False,
         include_structure=False,
-        enabled_capabilities=["none"],
     )
     state = json.loads((target / STATE_FILENAME).read_text(encoding="utf-8"))
     manifest = state["framework_manifest"]
@@ -570,7 +387,6 @@ def test_install_writes_tree_digest(tmp_path: Path) -> None:
         force=False,
         dry_run=False,
         include_structure=False,
-        enabled_capabilities=["none"],
     )
     state = json.loads((target / STATE_FILENAME).read_text(encoding="utf-8"))
     assert "tree_digest" in state
@@ -582,7 +398,6 @@ def test_install_writes_tree_digest(tmp_path: Path) -> None:
         force=True,
         dry_run=False,
         include_structure=False,
-        enabled_capabilities=["none"],
     )
     state2 = json.loads((target / STATE_FILENAME).read_text(encoding="utf-8"))
     assert state["tree_digest"] == state2["tree_digest"]
@@ -595,7 +410,6 @@ def test_update_short_circuits_when_tree_digest_unchanged(tmp_path: Path) -> Non
         force=False,
         dry_run=False,
         include_structure=False,
-        enabled_capabilities=["none"],
     )
     # Even if we set a different framework_version label, tree_digest drives up_to_date.
     state_file = target / STATE_FILENAME
@@ -614,12 +428,10 @@ def test_update_detects_locally_modified_file(tmp_path: Path) -> None:
         force=False,
         dry_run=False,
         include_structure=False,
-        enabled_capabilities=["none"],
     )
 
     # Host edits a framework-owned file.
     agents_md = target / "AGENTS.md"
-    original = agents_md.read_text(encoding="utf-8")
     agents_md.write_text("# HOST EDITED\n", encoding="utf-8")
 
     summary = update_template(target=target, force=False, dry_run=False)
@@ -637,7 +449,6 @@ def test_update_force_overwrites_locally_modified_file(tmp_path: Path) -> None:
         force=False,
         dry_run=False,
         include_structure=False,
-        enabled_capabilities=["none"],
     )
 
     agents_md = target / "AGENTS.md"
@@ -658,7 +469,6 @@ def test_update_detects_conflict_when_both_sides_changed(
         force=False,
         dry_run=False,
         include_structure=False,
-        enabled_capabilities=["none"],
     )
 
     # Simulate host editing AGENTS.md.
@@ -687,18 +497,14 @@ def test_update_applies_updatable_file(tmp_path: Path) -> None:
         force=False,
         dry_run=False,
         include_structure=False,
-        enabled_capabilities=["none"],
     )
 
     agents_md = target / "AGENTS.md"
     real_hash = file_sha256(agents_md)
 
     # Simulate "template changed AGENTS.md since last install":
-    # - set h_state = real_hash (host hasn't changed since install)
-    # - write a *different* file content to the host AGENTS.md so h_host == real_hash,
-    #   and the template hash (real) != h_state (fake_old).
-    # Actually the simpler approach: write the old content to host and old hash to state,
-    # then update will see h_host==h_state (host unchanged) but h_tpl != h_state (template changed).
+    # write the old content to host and old hash to state, then update will
+    # see h_host==h_state (host unchanged) but h_tpl != h_state (template changed).
     fake_old_content = "# OLD CONTENT\n"
     agents_md.write_text(fake_old_content, encoding="utf-8")
     fake_old_hash = file_sha256(agents_md)
@@ -732,7 +538,6 @@ def test_update_handles_legacy_list_manifest(tmp_path: Path) -> None:
         force=False,
         dry_run=False,
         include_structure=False,
-        enabled_capabilities=["none"],
     )
 
     # Downgrade manifest to legacy list format.
@@ -743,7 +548,7 @@ def test_update_handles_legacy_list_manifest(tmp_path: Path) -> None:
     state_file.write_text(json.dumps(state, indent=2) + "\n", encoding="utf-8")
 
     # Update should succeed: legacy list normalised, then migrated to map format.
-    summary = update_template(target=target, force=False, dry_run=False)
+    update_template(target=target, force=False, dry_run=False)
     # Legacy sha256=None means all entries treated as updatable (no sha256 to compare).
     # After update, state must have map-format manifest and tree_digest.
     new_state = json.loads(state_file.read_text(encoding="utf-8"))
