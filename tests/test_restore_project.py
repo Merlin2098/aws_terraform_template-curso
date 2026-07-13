@@ -11,21 +11,7 @@ def _write(path: Path, content: str) -> None:
     path.write_text(content, encoding="utf-8")
 
 
-def _create_sample_project(project_root: Path, *, enable_saas: bool = True) -> None:
-    _write(
-        project_root / "pyproject.toml",
-        """
-[project]
-name = "sample"
-version = "0.1.0"
-dependencies = []
-[project.optional-dependencies]
-local = []
-saas = []
-[dependency-groups]
-dev-local = []
-""",
-    )
+def _create_sample_project(project_root: Path) -> None:
     _write(
         project_root / "ai/context.yaml",
         """
@@ -46,34 +32,6 @@ module_roots:
 """,
     )
     _write(
-        project_root / "ai/capabilities/languages/python.yaml",
-        """
-name: python
-paths: [ai/skills/python/]
-dependencies:
-  extras: [local]
-  groups: [dev-local]
-scanners: [python]
-artifacts: [dependency_graph, context_bundle, skills_registry]
-""",
-    )
-    _write(
-        project_root / "ai/capabilities/frameworks/react.yaml",
-        "name: react\ndepends_on:\n  languages: [python]\n",
-    )
-    _write(
-        project_root / "ai/capabilities/business/saas.yaml",
-        """
-name: saas
-depends_on:
-  frameworks: [react]
-paths: [ai/skills/saas/]
-dependencies:
-  extras: [saas]
-artifacts: [context_bundle]
-""",
-    )
-    _write(
         project_root / "ai/skills.yaml",
         """
 python_skill:
@@ -87,86 +45,46 @@ saas_auth:
     _write(project_root / "ai/skills/python/example.md", "# Python\n")
     _write(project_root / "ai/skills/saas/auth.md", "# SaaS\n")
     _write(project_root / "src/main.py", "import json\n")
-    _write(
-        project_root / ".template-profile.yaml",
-        f"""
-schema_version: 1
-capabilities:
-  languages:
-    python:
-      enabled: true
-  frameworks:
-    react:
-      enabled: false
-  business:
-    saas:
-      enabled: {str(enable_saas).lower()}
-dependency_policy:
-  include_dev: true
-  additional_extras: []
-  additional_groups: []
-""",
-    )
 
 
-def test_validate_consistency_checks_active_skill_files(tmp_path: Path) -> None:
-    _create_sample_project(tmp_path, enable_saas=False)
+def test_validate_consistency_checks_all_declared_skill_files(tmp_path: Path) -> None:
+    _create_sample_project(tmp_path)
 
-    assert validate_consistency(tmp_path) == {"missing": [], "gated": []}
+    assert validate_consistency(tmp_path) == {"missing": []}
 
     (tmp_path / "ai/skills/python/example.md").unlink()
     assert validate_consistency(tmp_path)["missing"] == ["ai/skills/python/example.md"]
 
 
-def test_restore_dry_run_reports_explicit_implicit_and_disabled(
-    tmp_path: Path,
-) -> None:
+def test_restore_dry_run_skips_dependency_install_and_context(tmp_path: Path) -> None:
     _create_sample_project(tmp_path)
 
     payload = restore_project(tmp_path, dry_run=True)
 
-    assert payload["explicit_capabilities"] == [
-        "languages:python",
-        "business:saas",
-    ]
-    assert payload["implicit_capabilities"] == ["frameworks:react"]
-    assert payload["disabled_capabilities"] == []
     assert payload["dependencies"]["status"] == "skipped"
     assert payload["context"]["status"] == "skipped"
 
 
-def test_restore_regenerates_filtered_context_artifacts(tmp_path: Path) -> None:
-    _create_sample_project(tmp_path, enable_saas=False)
+def test_restore_regenerates_context_artifacts_with_all_skills(tmp_path: Path) -> None:
+    _create_sample_project(tmp_path)
 
     payload = restore_project(tmp_path, dry_run=False)
 
     assert payload["context"]["status"] == "ok"
     registry = (tmp_path / ".ai/skills_registry.json").read_text(encoding="utf-8")
     assert "python_skill" in registry
-    assert "saas_auth" not in registry
+    assert "saas_auth" in registry
 
 
-def test_enabling_capability_changes_generated_skill_registry(tmp_path: Path) -> None:
-    _create_sample_project(tmp_path, enable_saas=False)
-    restore_project(tmp_path, dry_run=False)
-    disabled_registry = (tmp_path / ".ai/skills_registry.json").read_text(
-        encoding="utf-8"
-    )
+def test_restore_skips_dependency_install_without_requirements_files(
+    tmp_path: Path,
+) -> None:
+    _create_sample_project(tmp_path)
 
-    profile_path = tmp_path / ".template-profile.yaml"
-    profile_path.write_text(
-        profile_path.read_text(encoding="utf-8").replace(
-            "saas:\n      enabled: false", "saas:\n      enabled: true"
-        ),
-        encoding="utf-8",
-    )
-    restore_project(tmp_path, dry_run=False)
-    enabled_registry = (tmp_path / ".ai/skills_registry.json").read_text(
-        encoding="utf-8"
-    )
+    payload = restore_project(tmp_path, dry_run=False)
 
-    assert "saas_auth" not in disabled_registry
-    assert "saas_auth" in enabled_registry
+    assert payload["dependencies"]["status"] == "skipped"
+    assert payload["dependencies"]["reason"] == "no requirements files found"
 
 
 def test_restore_is_idempotent(tmp_path: Path) -> None:

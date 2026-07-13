@@ -128,7 +128,7 @@ def _detect_data_stack(project_root: Path, files: list[Path]) -> dict[str, Any]:
         if any(token in lower_rel for token in ("contract", "validation", "quality")):
             patterns.add("data_quality")
 
-        if path.name != "pyproject.toml" and path.suffix.lower() != ".py":
+        if not path.name.startswith("requirements") and path.suffix.lower() != ".py":
             continue
 
         text = _safe_read(path).lower()
@@ -153,10 +153,13 @@ def _detect_cloud(project_root: Path, files: list[Path]) -> dict[str, Any]:
 
     for path in files:
         suffix = path.suffix.lower()
-        if (
-            suffix not in {".py", ".tf", ".yaml", ".yml", ".json"}
-            and path.name != "pyproject.toml"
-        ):
+        if suffix not in {
+            ".py",
+            ".tf",
+            ".yaml",
+            ".yml",
+            ".json",
+        } and not path.name.startswith("requirements"):
             continue
 
         text = _safe_read(path).lower()

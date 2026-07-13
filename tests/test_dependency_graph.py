@@ -3,7 +3,7 @@ from __future__ import annotations
 from pathlib import Path
 
 from ai.runtime.dependency_graph import (
-    active_scanners,
+    DEFAULT_SCANNERS,
     build_dependency_graph,
     scan_javascript,
     scan_python,
@@ -78,39 +78,13 @@ def test_build_dependency_graph_with_explicit_scanners(tmp_path: Path) -> None:
     assert "external:react" in node_ids
 
 
-def test_active_scanners_falls_back_to_python_for_legacy_hosts(tmp_path: Path) -> None:
+def test_build_dependency_graph_defaults_to_python_scanner(tmp_path: Path) -> None:
+    _write(tmp_path / "main.py", "import os\n")
     _write(
         tmp_path / "ai" / "context.yaml",
         "ignore_dirs: []\nignore_top_level_files: []\n",
     )
 
-    assert active_scanners(tmp_path) == ["python"]
+    graph = build_dependency_graph(tmp_path)
 
-
-def test_active_scanners_collects_from_active_capabilities(tmp_path: Path) -> None:
-    _write(
-        tmp_path / "ai" / "context.yaml",
-        "ignore_dirs: []\nignore_top_level_files: []\n",
-    )
-    _write(
-        tmp_path / "ai" / "capabilities" / "languages" / "python.yaml",
-        "name: python\ntype: language\nscanners:\n  - python\n",
-    )
-    _write(
-        tmp_path / "ai" / "capabilities" / "frameworks" / "react.yaml",
-        "name: react\ntype: framework\nscanners:\n  - javascript\n",
-    )
-    _write(
-        tmp_path / ".template-profile.yaml",
-        "schema_version: 1\n"
-        "capabilities:\n"
-        "  languages:\n"
-        "    python:\n"
-        "      enabled: true\n"
-        "  frameworks:\n"
-        "    react:\n"
-        "      enabled: true\n"
-        "dependency_policy: {}\n",
-    )
-
-    assert active_scanners(tmp_path) == ["python", "javascript"]
+    assert graph["scanners"] == list(DEFAULT_SCANNERS)

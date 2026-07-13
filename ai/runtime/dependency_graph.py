@@ -264,25 +264,11 @@ SCANNERS: dict[str, ScannerFn] = {
 }
 
 
-def active_scanners(project_root: Path) -> list[str]:
-    """Resolve which registered scanners apply to ``project_root``.
-
-    Reads the capability registry and the host's active YAML profile to
-    collect the ``scanners:`` declared by active descriptors (per
-    ADR-FW-001). Falls back to :data:`DEFAULT_SCANNERS` for legacy hosts
-    without typed capabilities, per SPEC-FW-005 §9.
-    """
-    from ai.runtime.project_profile import resolve_project_profile
-
-    resolved = resolve_project_profile(project_root, validate_dependencies=False)
-    return list(resolved.scanners) or list(DEFAULT_SCANNERS)
-
-
 def build_dependency_graph(
     project_root: Path, scanners: list[str] | None = None
 ) -> dict[str, Any]:
     project_root = project_root.resolve()
-    scanner_names = scanners if scanners is not None else active_scanners(project_root)
+    scanner_names = scanners if scanners is not None else list(DEFAULT_SCANNERS)
 
     nodes: dict[str, Node] = {}
     edges: list[Edge] = []
