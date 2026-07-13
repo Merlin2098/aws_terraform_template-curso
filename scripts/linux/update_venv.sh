@@ -5,7 +5,6 @@ set -euo pipefail
 SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
 REPO_ROOT="$(cd "${SCRIPT_DIR}/../.." && pwd)"
 
-python_path=""
 use_dev_dependencies="true"
 dev_option=""
 
@@ -22,62 +21,15 @@ usage() {
 Usage: ./scripts/linux/update_venv.sh [options]
 
 Options:
-  --python-path PATH  Use this Python interpreter explicitly.
-  --include-dev       Install dev dependency groups explicitly.
-  --no-dev            Skip dev dependency groups.
+  --include-dev       Install requirements-dev.txt explicitly.
+  --no-dev            Skip requirements-dev.txt.
   -h, --help          Show this help text.
 EOF
-}
-
-test_command() {
-    local command="$1"
-    shift
-    "${command}" "$@" --version >/dev/null 2>&1
-}
-
-resolve_python_command() {
-    if [[ -x "${REPO_ROOT}/.venv/bin/python" ]] && test_command "${REPO_ROOT}/.venv/bin/python"; then
-        printf '%s\n' "${REPO_ROOT}/.venv/bin/python"
-        return
-    fi
-
-    if [[ -n "${python_path}" ]]; then
-        if [[ ! -x "${python_path}" ]]; then
-            printf "Python not found at '%s'.\n" "${python_path}" >&2
-            exit 1
-        fi
-        if ! test_command "${python_path}"; then
-            printf "Python at '%s' did not respond correctly.\n" "${python_path}" >&2
-            exit 1
-        fi
-        printf '%s\n' "${python_path}"
-        return
-    fi
-
-    local candidates=("python3" "python")
-    local candidate=""
-    for candidate in "${candidates[@]}"; do
-        if command -v "${candidate}" >/dev/null 2>&1 && test_command "${candidate}"; then
-            printf '%s\n' "${candidate}"
-            return
-        fi
-    done
-
-    printf "Unable to resolve a working Python interpreter. Tried: .venv/bin/python, python3, python.\n" >&2
-    exit 1
 }
 
 parse_args() {
     while [[ $# -gt 0 ]]; do
         case "$1" in
-            --python-path)
-                if [[ $# -lt 2 ]]; then
-                    printf "Expected a value after --python-path.\n" >&2
-                    exit 1
-                fi
-                python_path="$2"
-                shift 2
-                ;;
             --include-dev)
                 if [[ "${dev_option}" == "no-dev" ]]; then
                     printf "Use either --include-dev or --no-dev, but not both.\n" >&2
@@ -110,41 +62,30 @@ parse_args() {
 }
 
 parse_args "$@"
+
 if [[ ! -d "${REPO_ROOT}/.venv" ]]; then
     printf "No .venv directory was found. Run ./scripts/linux/setup_env.sh first.\n" >&2
     exit 1
 fi
+venv_python="${REPO_ROOT}/.venv/bin/python"
 
-selected_python="$(resolve_python_command)"
+write_step "Starting virtual environment update from requirements files."
 
-write_step "Starting virtual environment update from uv project files."
+write_phase "Phase 1: Validate Environment"
+write_step "[venv] Using existing interpreter: ${venv_python}"
+"${venv_python}" --version
 
-write_phase "Phase 1: Resolve Python"
-write_step "[Python] Using interpreter: ${selected_python}"
-"${selected_python}" --version
-
-write_phase "Phase 2: Validate Tooling"
-if "${selected_python}" -m uv --version >/dev/null 2>&1; then
-    write_step "[uv] Using uv via ${selected_python} -m uv"
-elif command -v uv >/dev/null 2>&1 && uv --version >/dev/null 2>&1; then
-    write_step "[uv] Using uv from PATH"
-else
-    printf "Unable to resolve uv. Install uv for the selected Python interpreter or expose uv in PATH.\n" >&2
+if [[ ! -f "${REPO_ROOT}/requirements.txt" ]]; then
+    printf "requirements.txt is required for the pip update flow.\n" >&2
     exit 1
 fi
+write_step "[Project] Verified requirements.txt and existing .venv."
 
-if [[ ! -f "${REPO_ROOT}/pyproject.toml" ]]; then
-    printf "pyproject.toml is required for the uv update flow.\n" >&2
-    exit 1
-fi
-write_step "[Project] Verified pyproject.toml and existing .venv."
-
-write_phase "Phase 3: Sync Environment"
-command=("${selected_python}" "${REPO_ROOT}/scripts/run_uv_sync.py" "update" "--python-path" "${selected_python}")
-if [[ "${use_dev_dependencies}" == "false" ]]; then
-    command+=("--no-dev")
-else
-    command+=("--include-dev")
+write_phase "Phase 2: Update Dependencies"
+"${venv_python}" -m pip install --upgrade pip
+command=("${venv_python}" "-m" "pip" "install" "--upgrade" "-r" "requirements.txt")
+if [[ "${use_dev_dependencies}" == "true" && -f "${REPO_ROOT}/requirements-dev.txt" ]]; then
+    command+=("-r" "requirements-dev.txt")
 fi
 write_step "[Dependencies] Running: ${command[*]}"
 (
@@ -152,6 +93,6 @@ write_step "[Dependencies] Running: ${command[*]}"
     "${command[@]}"
 )
 
-write_phase "Phase 4: Summary"
+write_phase "Phase 3: Summary"
 write_step "Virtual environment updated successfully."
-printf 'Suggested interpreter path: %s\n' "${REPO_ROOT}/.venv/bin/python"
+printf 'Suggested interpreter path: %s\n' "${venv_python}"

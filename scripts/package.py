@@ -1,13 +1,10 @@
 # Builds a deployment ZIP for AWS (Glue, Lambda, etc.).
-# uv resolves dependencies from pyproject.toml + uv.lock and exports them as
-# requirements.txt — the format cloud environments understand. The bundle
-# contains src/ code plus that resolved requirements.txt (prod-only, no dev deps).
+# The bundle contains src/ code plus the repository's requirements.txt — the
+# format cloud environments understand.
 # Usage: python scripts/package.py [--clean]
 from __future__ import annotations
 
 import argparse
-import shutil
-import subprocess
 import sys
 from pathlib import Path
 from zipfile import ZIP_DEFLATED, ZipFile
@@ -18,22 +15,9 @@ REPO_ROOT = Path(__file__).resolve().parents[1]
 if str(REPO_ROOT) not in sys.path:
     sys.path.insert(0, str(REPO_ROOT))
 
-from ai.runtime.project_profile import resolve_project_profile, uv_export_args  # noqa: E402
 ARTIFACT_PATH = REPO_ROOT / "artifacts" / "data_platform_bundle.zip"
 INCLUDE_DIRS = [REPO_ROOT / "src"]
-
-
-def runtime_requirements_text() -> str:
-    resolved = resolve_project_profile(REPO_ROOT)
-    uv = shutil.which("uv") or "uv"
-    result = subprocess.run(
-        [uv, *uv_export_args(resolved)],
-        cwd=REPO_ROOT,
-        capture_output=True,
-        text=True,
-        check=True,
-    )
-    return result.stdout
+REQUIREMENTS_PATH = REPO_ROOT / "requirements.txt"
 
 
 def build_bundle() -> Path:
@@ -49,8 +33,9 @@ def build_bundle() -> Path:
                     continue
                 if file_path.is_file():
                     archive.write(file_path, file_path.relative_to(REPO_ROOT))
-        # Ship a resolved cloud runtime requirements file in the bundle.
-        archive.writestr("requirements.txt", runtime_requirements_text())
+        # Ship the runtime requirements file in the bundle (dev-only deps
+        # live in requirements-dev.txt and are never shipped).
+        archive.write(REQUIREMENTS_PATH, "requirements.txt")
     return ARTIFACT_PATH
 
 

@@ -1,14 +1,15 @@
 # Restores the project to a consistent state after cloning or switching branches.
 # Does three things in sequence:
-#   1. Resolves the active capability profile and syncs the uv environment (run_uv_sync update).
-#   2. Regenerates AI context files via refresh_context (ai/context/).
+#   1. Installs requirements.txt + requirements-dev.txt into the active environment.
+#   2. Regenerates AI context files via refresh_context (.ai/).
 #   3. Validates that all skills declared in the registry actually exist on disk.
-# Exits with code 1 if any skill files are missing or if the profile is invalid.
+# Exits with code 1 if any skill files are missing.
 # Usage: python scripts/restore_project.py [--project-root <path>] [--dry-run] [--pretty]
 from __future__ import annotations
 
 import argparse
 import json
+import subprocess
 import sys
 from pathlib import Path
 
@@ -17,10 +18,8 @@ REPO_ROOT = Path(__file__).resolve().parents[1]
 if str(REPO_ROOT) not in sys.path:
     sys.path.insert(0, str(REPO_ROOT))
 
-from ai.runtime.project_profile import resolve_project_profile  # noqa: E402
 from ai.runtime.skill_registry import build_skills_registry  # noqa: E402
 from ai.tools.refresh_context import refresh_context  # noqa: E402
-from scripts.run_uv_sync import run_update  # noqa: E402
 
 
 def validate_consistency(project_root: Path) -> dict[str, list[str]]:
@@ -30,21 +29,32 @@ def validate_consistency(project_root: Path) -> dict[str, list[str]]:
         for skill in registry["skills"]
         if not (project_root / skill["path"]).exists()
     ]
-    return {"missing": missing, "gated": []}
+    return {"missing": missing}
+
+
+def install_requirements(project_root: Path, *, dry_run: bool) -> dict[str, object]:
+    requirement_files = [
+        project_root / name
+        for name in ("requirements.txt", "requirements-dev.txt")
+        if (project_root / name).exists()
+    ]
+    if not requirement_files:
+        return {"status": "skipped", "reason": "no requirements files found"}
+
+    command = [sys.executable, "-m", "pip", "install"]
+    for requirement_file in requirement_files:
+        command.extend(["-r", str(requirement_file)])
+
+    if dry_run:
+        return {"status": "skipped", "reason": "dry-run", "command": command}
+
+    subprocess.run(command, cwd=project_root, check=True)
+    return {"status": "ok"}
 
 
 def restore_project(project_root: Path, *, dry_run: bool = False) -> dict[str, object]:
     project_root = project_root.resolve()
-    resolved = resolve_project_profile(
-        project_root,
-        validate_dependencies=(project_root / "pyproject.toml").exists(),
-    )
-
-    if project_root == REPO_ROOT:
-        run_update(dry_run=dry_run, resolved=resolved, python_path=None)
-        dependencies: dict[str, object] = {"status": "ok"}
-    else:
-        dependencies = {"status": "skipped", "reason": "project_root != REPO_ROOT"}
+    dependencies = install_requirements(project_root, dry_run=dry_run)
 
     context = (
         {"status": "skipped", "reason": "dry-run"}
@@ -55,11 +65,6 @@ def restore_project(project_root: Path, *, dry_run: bool = False) -> dict[str, o
 
     return {
         "status": "ok",
-        "profile_source": resolved.profile.source,
-        "explicit_capabilities": list(resolved.explicit_capabilities),
-        "implicit_capabilities": list(resolved.implicit_capabilities),
-        "disabled_capabilities": list(resolved.disabled_capabilities),
-        "invalid_capabilities": [],
         "dependencies": dependencies,
         "context": context,
         "consistency": consistency,
@@ -68,7 +73,7 @@ def restore_project(project_root: Path, *, dry_run: bool = False) -> dict[str, o
 
 def main() -> int:
     parser = argparse.ArgumentParser(
-        description="Restore a host from its active profile and capability registry."
+        description="Restore a host by installing requirements and refreshing AI context."
     )
     parser.add_argument("--project-root", default=".")
     parser.add_argument("--dry-run", action="store_true")

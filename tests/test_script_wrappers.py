@@ -126,8 +126,8 @@ def test_pytest_wrapper_smoke() -> None:
 
 def test_pytest_wrapper_treats_no_tests_as_success(tmp_path: Path) -> None:
     _write(
-        tmp_path / "pyproject.toml",
-        "[project]\nname = 'empty-tests'\nversion = '0.0.0'\n",
+        tmp_path / "requirements.txt",
+        "",
     )
 
     result = subprocess.run(
@@ -142,31 +142,31 @@ def test_pytest_wrapper_treats_no_tests_as_success(tmp_path: Path) -> None:
     assert "No tests were collected" in result.stdout
 
 
-def test_uv_sync_wrapper_dry_run_init() -> None:
-    result = subprocess.run(
-        [sys.executable, "scripts/run_uv_sync.py", "init", "--dry-run"],
-        cwd=REPO_ROOT,
-        capture_output=True,
-        text=True,
-        check=False,
-    )
+def test_package_wrapper_builds_bundle_with_requirements(
+    tmp_path: Path, monkeypatch
+) -> None:
+    import scripts.package as package
 
-    assert result.returncode == 0, result.stderr
-    assert "sync --no-default-groups --extra local --group dev-local" in result.stdout
+    fake_src = tmp_path / "src"
+    fake_src.mkdir()
+    (fake_src / "job.py").write_text("print('ok')\n", encoding="utf-8")
+    fake_requirements = tmp_path / "requirements.txt"
+    fake_requirements.write_text("pandas==2.0.0\n", encoding="utf-8")
+    fake_artifact = tmp_path / "artifacts" / "bundle.zip"
 
+    monkeypatch.setattr(package, "REPO_ROOT", tmp_path)
+    monkeypatch.setattr(package, "INCLUDE_DIRS", [fake_src])
+    monkeypatch.setattr(package, "REQUIREMENTS_PATH", fake_requirements)
+    monkeypatch.setattr(package, "ARTIFACT_PATH", fake_artifact)
 
-def test_uv_sync_wrapper_builds_cloud_command_from_capabilities() -> None:
-    from ai.runtime.profile import Profile
-    from ai.runtime.project_profile import resolve_project_profile
-    from scripts.run_uv_sync import sync_command
+    artifact = package.build_bundle()
 
-    resolved = resolve_project_profile(
-        REPO_ROOT,
-        profile=Profile(capabilities={"infrastructure": ["terraform"]}),
-    )
-    command = sync_command(resolved)
-    text = " ".join(command)
+    assert artifact == fake_artifact
+    assert artifact.exists()
 
-    assert "--no-default-groups" in text
-    assert "--extra local --extra cloud" in text
-    assert "--group dev-local --group dev-cloud" in text
+    from zipfile import ZipFile
+
+    with ZipFile(artifact) as archive:
+        names = set(archive.namelist())
+    assert "src/job.py" in names
+    assert "requirements.txt" in names

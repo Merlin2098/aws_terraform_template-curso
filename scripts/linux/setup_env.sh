@@ -23,8 +23,8 @@ Usage: ./scripts/linux/setup_env.sh [options]
 
 Options:
   --python-path PATH  Use this Python interpreter explicitly.
-  --include-dev       Install dev dependency groups explicitly.
-  --no-dev            Skip dev dependency groups.
+  --include-dev       Install requirements-dev.txt explicitly.
+  --no-dev            Skip requirements-dev.txt.
   -h, --help          Show this help text.
 EOF
 }
@@ -107,34 +107,31 @@ parse_args() {
 parse_args "$@"
 selected_python="$(resolve_python_command)"
 
-write_step "Starting uv environment setup for this repository."
+write_step "Starting pip environment setup for this repository."
 
 write_phase "Phase 1: Resolve Python"
 write_step "[Python] Using interpreter: ${selected_python}"
 "${selected_python}" --version
 
-write_phase "Phase 2: Validate Tooling"
-if "${selected_python}" -m uv --version >/dev/null 2>&1; then
-    write_step "[uv] Using uv via ${selected_python} -m uv"
-elif command -v uv >/dev/null 2>&1 && uv --version >/dev/null 2>&1; then
-    write_step "[uv] Using uv from PATH"
+write_phase "Phase 2: Create Virtual Environment"
+if [[ ! -d "${REPO_ROOT}/.venv" ]]; then
+    write_step "[venv] Creating .venv with ${selected_python} -m venv"
+    "${selected_python}" -m venv "${REPO_ROOT}/.venv"
 else
-    printf "Unable to resolve uv. Install uv for the selected Python interpreter or expose uv in PATH.\n" >&2
+    write_step "[venv] Reusing existing .venv"
+fi
+venv_python="${REPO_ROOT}/.venv/bin/python"
+
+write_phase "Phase 3: Install Dependencies"
+if [[ ! -f "${REPO_ROOT}/requirements.txt" ]]; then
+    printf "requirements.txt is required for the pip setup flow.\n" >&2
     exit 1
 fi
 
-if [[ ! -f "${REPO_ROOT}/pyproject.toml" ]]; then
-    printf "pyproject.toml is required for the uv setup flow.\n" >&2
-    exit 1
-fi
-write_step "[Project] Verified pyproject.toml."
-
-write_phase "Phase 3: Sync Environment"
-command=("${selected_python}" "${REPO_ROOT}/scripts/run_uv_sync.py" "init" "--python-path" "${selected_python}")
-if [[ "${use_dev_dependencies}" == "false" ]]; then
-    command+=("--no-dev")
-else
-    command+=("--include-dev")
+"${venv_python}" -m pip install --upgrade pip
+command=("${venv_python}" "-m" "pip" "install" "-r" "requirements.txt")
+if [[ "${use_dev_dependencies}" == "true" && -f "${REPO_ROOT}/requirements-dev.txt" ]]; then
+    command+=("-r" "requirements-dev.txt")
 fi
 write_step "[Dependencies] Running: ${command[*]}"
 (
@@ -144,4 +141,4 @@ write_step "[Dependencies] Running: ${command[*]}"
 
 write_phase "Phase 4: Summary"
 write_step "Environment setup completed successfully."
-printf 'Suggested interpreter path: %s\n' "${REPO_ROOT}/.venv/bin/python"
+printf 'Suggested interpreter path: %s\n' "${venv_python}"
