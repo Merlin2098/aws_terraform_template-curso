@@ -15,8 +15,8 @@ It does not cover how to declare those services in Terraform — that belongs in
 |---|---|
 | Service-specific usage patterns (Lambda, S3, SQS, etc.) | Terraform resource declarations (see `ai/domains/terraform.md`) |
 | IAM role and policy design | Python job code running on AWS (see `ai/domains/python.md`) |
-| CloudWatch logging and observability | SaaS auth via Supabase (see `ai/domains/saas.md`) |
-| Smoke testing and resource validation | Data pipeline logic (see `ai/domains/data-product.md`) |
+| CloudWatch logging and observability | Data pipeline logic (see `ai/domains/data-product.md`) |
+| Smoke testing and resource validation | |
 | API Gateway, CloudFront, Cognito patterns | React frontend code (see `ai/domains/frontend.md`) |
 | Bedrock model access and invocation | |
 | Textract async workflows | |
@@ -27,6 +27,10 @@ It does not cover how to declare those services in Terraform — that belongs in
 
 | Skill | File | Description |
 |---|---|---|
+| AWS CLI | `ai/skills/aws/aws_cli.md` | Setup, named profiles, credential precedence, and access validation |
+| Account bootstrap (console) | `ai/skills/aws/account_bootstrap_console.md` | Day-1 IAM admin user, MFA, and Budget before Terraform exists |
+| DynamoDB modeling | `ai/skills/aws/dynamodb_modeling.md` | PK/SK design, single-table basics, boto3 CRUD, and aws_dynamodb_table |
+| RDS overview | `ai/skills/aws/rds_overview.md` | When relational, engine/instance basics, aws_db_instance, and destroyable-lab config |
 | Lambda functions | `ai/skills/aws/lambda_functions.md` | Event-driven compute with AWS Lambda |
 | S3 data lake | `ai/skills/aws/s3_data_lake.md` | Data lake architecture using S3 |
 | S3 presigned URLs | `ai/skills/aws/s3_presigned_urls.md` | Presigned PUT/POST URL generation, TTL selection, CORS, and S3 event trigger |
@@ -37,6 +41,9 @@ It does not cover how to declare those services in Terraform — that belongs in
 | CloudFront + S3 hosting | `ai/skills/aws/cloudfront_s3_hosting.md` | Static hosting with OAC, cache behavior split, SPA routing, cache invalidation |
 | CloudWatch logging | `ai/skills/aws/cloudwatch_logging.md` | Logging and monitoring with CloudWatch |
 | Glue jobs | `ai/skills/aws/glue_jobs.md` | AWS Glue job design patterns |
+| Glue Crawler + Data Catalog | `ai/skills/aws/glue_crawler_catalog.md` | Crawler config, catalog database/table, and triggers |
+| Lake Formation intro | `ai/skills/aws/lake_formation_intro.md` | Data-lake governance and the permissions model over the Glue Catalog |
+| Kinesis / streaming intro | `ai/skills/aws/kinesis_streaming_intro.md` | Batch vs streaming, when to use streams, and core concepts |
 | Textract | `ai/skills/aws/textract.md` | Async Textract workflows, SNS/SQS notification pattern, FeatureTypes cost guidance |
 | Bedrock permissions | `ai/skills/aws/bedrock_permissions.md` | IAM actions, model access activation, cross-region inference ARNs |
 | Cognito auth | `ai/skills/aws/cognito_auth.md` | User Pool setup, JWT validation, API Gateway authoriser, frontend auth token flow |

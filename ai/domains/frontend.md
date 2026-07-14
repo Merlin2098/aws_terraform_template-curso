@@ -6,20 +6,17 @@ Guidance for building and deploying React SPAs that integrate with AWS backends
 (API Gateway, Lambda, S3, CloudFront, Cognito). This domain covers the build
 toolchain, AWS deployment pattern, API client design, and file upload UX.
 
-It is distinct from the SaaS frontend domain (`ai/domains/saas.md`), which targets
-React apps deployed to Vercel and backed by FastAPI/Supabase rather than AWS services.
-
 ---
 
 ## Scope
 
 | In scope | Out of scope |
 |---|---|
-| React + Vite build and environment configuration | SaaS React + Tailwind + Railway/Vercel (see `ai/domains/saas.md`) |
-| S3 + CloudFront deploy and cache invalidation | AWS infrastructure declaration (see `ai/domains/terraform.md`) |
-| Axios client with API Gateway auth headers | FastAPI backend (see `ai/domains/saas.md`) |
-| File upload via S3 presigned URLs | UX design patterns for SaaS (see `ai/domains/saas.md`) |
-| Loading / error / empty state conventions | Python Lambda code (see `ai/domains/python.md`) |
+| React + Vite build and environment configuration | AWS infrastructure declaration (see `ai/domains/terraform.md`) |
+| S3 + CloudFront deploy and cache invalidation | Python Lambda code (see `ai/domains/python.md`) |
+| Axios client with API Gateway auth headers | |
+| File upload via S3 presigned URLs | |
+| Loading / error / empty state conventions | |
 
 ---
 
@@ -48,5 +45,5 @@ Key global policies with strong frontend implications:
 
 - Global policies: `ai/policies/global.md`
 - Domain index: `ai/domains/index.md`
-- Related domains: `ai/domains/aws.md` (CloudFront, S3, API Gateway, Cognito), `ai/domains/saas.md` (alternative SaaS frontend stack)
+- Related domains: `ai/domains/aws.md` (CloudFront, S3, API Gateway, Cognito)
 - Spec that governs domain structure: `specs/rework/SPEC-FW-003.md`

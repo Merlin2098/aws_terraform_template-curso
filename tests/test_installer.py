@@ -162,9 +162,9 @@ def test_install_copies_all_skill_domains(tmp_path: Path) -> None:
         include_structure=False,
     )
 
-    assert "ai/domains/saas.md" in summary["copied"]
-    assert "ai/skills/saas/auth.md" in summary["copied"]
-    assert (target / "ai" / "domains" / "saas.md").exists()
+    assert "ai/domains/aws.md" in summary["copied"]
+    assert "ai/skills/aws/lambda_functions.md" in summary["copied"]
+    assert (target / "ai" / "domains" / "aws.md").exists()
 
 
 # --- versioning & update_template tests ---

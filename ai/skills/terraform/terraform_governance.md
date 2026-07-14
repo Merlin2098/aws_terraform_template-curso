@@ -134,6 +134,15 @@ variable "enable_artifact_bucket_versioning" {
 Rationale: versioning causes hidden costs, storage accumulation, and
 `terraform destroy` complexity in demo/lab environments.
 
+**Educational exception:** the Session 3 data-lake lab in this course
+deliberately sets `enable_artifact_bucket_versioning = true` to teach object
+versioning and recovery — see `ai/skills/aws/s3_data_lake.md`. This is a
+lab-scoped, explicitly justified override achieved through the existing flag
+above, not a change to this policy's default. The default stays `false` for
+every other environment, and the `## Avoid` guidance below is unchanged: the
+lab's explicit justification *is* the exception process this policy expects,
+not a precedent for enabling versioning elsewhere without one.
+
 ---
 
 ## Drift management process (SPEC-009 §8.2)

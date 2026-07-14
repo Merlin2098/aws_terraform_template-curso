@@ -26,6 +26,7 @@ Core data engineering: ingestion, transformation, serving, analytics, and storag
 | Data contracts | `ai/skills/data/data_contracts.md` |
 | Data quality | `ai/skills/data/data_quality_guidance.md` |
 | Athena query patterns | `ai/skills/data/athena_patterns.md` |
+| Athena vs Redshift | `ai/skills/data/athena_vs_redshift.md` |
 | SQL workflow | `ai/skills/sql/sql_workflow_guidance.md` |
 
 ---
@@ -36,10 +37,17 @@ Managed cloud services: compute, storage, messaging, ML, security.
 
 | Skill | Path |
 |---|---|
+| AWS CLI | `ai/skills/aws/aws_cli.md` |
+| Account bootstrap (console) | `ai/skills/aws/account_bootstrap_console.md` |
+| DynamoDB modeling | `ai/skills/aws/dynamodb_modeling.md` |
+| RDS overview | `ai/skills/aws/rds_overview.md` |
 | Lambda functions | `ai/skills/aws/lambda_functions.md` |
 | S3 data lake | `ai/skills/aws/s3_data_lake.md` |
 | S3 presigned URLs | `ai/skills/aws/s3_presigned_urls.md` |
 | SQS patterns | `ai/skills/aws/sqs_patterns.md` |
+| Glue Crawler + Data Catalog | `ai/skills/aws/glue_crawler_catalog.md` |
+| Lake Formation intro | `ai/skills/aws/lake_formation_intro.md` |
+| Kinesis / streaming intro | `ai/skills/aws/kinesis_streaming_intro.md` |
 | Step Functions | `ai/skills/aws/step_functions.md` |
 | EventBridge | `ai/skills/aws/eventbridge.md` |
 | API Gateway | `ai/skills/aws/api_gateway.md` |
@@ -102,25 +110,6 @@ React SPA patterns deployed to AWS (S3 + CloudFront).
 | React + Vite + AWS deploy | `ai/skills/frontend/react_vite_aws.md` |
 | API client patterns | `ai/skills/frontend/api_client_patterns.md` |
 | File upload UX | `ai/skills/frontend/file_upload_ux.md` |
-
----
-
-### SaaS — [descriptor](saas.md)
-
-Full-stack SaaS applications: React, FastAPI, PostgreSQL/Supabase, Auth, Analytics, Deploy.
-
-| Skill | Path |
-|---|---|
-| Frontend (React + Tailwind) | `ai/skills/saas/frontend.md` |
-| Backend (FastAPI) | `ai/skills/saas/backend.md` |
-| Database (PostgreSQL/Supabase) | `ai/skills/saas/database.md` |
-| Authentication (Supabase Auth + RBAC) | `ai/skills/saas/auth.md` |
-| SaaS Analytics | `ai/skills/saas/analytics.md` |
-| Deployment (Railway/Vercel) | `ai/skills/saas/deployment.md` |
-| UX/UI | `ai/skills/saas/ux.md` |
-| Supabase Storage & RLS | `ai/skills/saas/supabase.md` |
-| VPS Deployment (Docker/Nginx/SSL) | `ai/skills/saas/vps.md` |
-| Domains, DNS & Email | `ai/skills/saas/domains.md` |
 
 ---
 

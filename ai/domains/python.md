@@ -14,8 +14,8 @@ code quality and correctness — not on the AWS services the code runs on
 
 | In scope | Out of scope |
 |---|---|
-| Python project structure and packaging | FastAPI / SaaS backend (see `ai/domains/saas.md`) |
-| Testing patterns for pipelines and AWS boundaries | Terraform or infrastructure code |
+| Python project structure and packaging | Terraform or infrastructure code |
+| Testing patterns for pipelines and AWS boundaries | |
 | Typed exception hierarchies for Step Functions | SQL transformation logic (see `ai/domains/data-product.md`) |
 | Structured JSON logging and CloudWatch Insights | AWS service configuration (see `ai/domains/aws.md`) |
 | Bedrock SDK invocation patterns | Frontend JavaScript / TypeScript |

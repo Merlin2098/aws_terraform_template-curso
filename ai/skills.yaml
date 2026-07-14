@@ -1,3 +1,19 @@
+aws_cli:
+  path: ai/skills/aws/aws_cli.md
+  description: AWS CLI setup — aws configure, named profiles, credential precedence, and access validation
+
+account_bootstrap_console:
+  path: ai/skills/aws/account_bootstrap_console.md
+  description: Day-1 console bootstrap — IAM admin user, MFA, and a Budget before Terraform exists
+
+dynamodb_modeling:
+  path: ai/skills/aws/dynamodb_modeling.md
+  description: DynamoDB table modeling — PK/SK design, single-table basics, boto3 CRUD, and aws_dynamodb_table
+
+rds_overview:
+  path: ai/skills/aws/rds_overview.md
+  description: Amazon RDS overview — when relational, engine/instance basics, aws_db_instance, and destroyable-lab config
+
 glue_jobs:
   path: ai/skills/aws/glue_jobs.md
   description: AWS Glue job design patterns
@@ -9,6 +25,18 @@ lambda_functions:
 lambda_packaging:
   path: ai/skills/aws/lambda_packaging.md
   description: ECR container image packaging for Lambda — Dockerfile, docker_push.sh, Terraform patterns, and --provenance=false rule
+
+glue_crawler_catalog:
+  path: ai/skills/aws/glue_crawler_catalog.md
+  description: Glue Crawler + Data Catalog — crawler config, catalog database/table, and triggers
+
+lake_formation_intro:
+  path: ai/skills/aws/lake_formation_intro.md
+  description: Lake Formation intro — data-lake governance and the permissions model over the Glue Catalog
+
+kinesis_streaming_intro:
+  path: ai/skills/aws/kinesis_streaming_intro.md
+  description: Kinesis / streaming intro — batch vs streaming, when to use streams, and core concepts
 
 step_functions:
   path: ai/skills/aws/step_functions.md
@@ -178,45 +206,10 @@ athena_patterns:
   path: ai/skills/data/athena_patterns.md
   description: Athena query lifecycle, result pagination, partition pruning, partition projection, and workgroup cost guardrails
 
-saas_frontend:
-  path: ai/skills/saas/frontend.md
-  description: React + Vite + Tailwind SaaS UI patterns, component design, hooks, and form handling
+athena_vs_redshift:
+  path: ai/skills/data/athena_vs_redshift.md
+  description: Athena vs Redshift — decision guidance for serverless query vs provisioned warehouse
 
-saas_backend:
-  path: ai/skills/saas/backend.md
-  description: FastAPI service layer, SQLAlchemy repository pattern, Pydantic validation, and layered architecture
-
-saas_database:
-  path: ai/skills/saas/database.md
-  description: PostgreSQL/Supabase schema design, Alembic migrations, soft delete, audit fields, and indexes
-
-saas_auth:
-  path: ai/skills/saas/auth.md
-  description: Supabase Auth, JWT validation, RBAC roles (OWNER/ADMIN/SALES/SPECIALIST), and frontend session management
-
-saas_analytics:
-  path: ai/skills/saas/analytics.md
-  description: Operational KPI dashboards, business metrics (appointments, leads, conversion), and historical snapshot tables
-
-saas_deployment:
-  path: ai/skills/saas/deployment.md
-  description: Railway/Vercel deploy, GitHub Actions CI/CD, environment config management, and migration-on-deploy pattern
-
-saas_ux:
-  path: ai/skills/saas/ux.md
-  description: SaaS dashboard UX, form design, navigation patterns, loading/empty states, and accessibility baseline
-
-saas_supabase:
-  path: ai/skills/saas/supabase.md
-  description: Supabase Storage buckets, object path conventions, and RLS policy patterns for tables and storage.objects
-
-saas_vps:
-  path: ai/skills/saas/vps.md
-  description: VPS deployment using Docker Compose, Nginx reverse proxy, Let's Encrypt TLS, and database backup/restore
-
-saas_domains:
-  path: ai/skills/saas/domains.md
-  description: DNS records, Cloudflare proxy/TLS modes, and SPF/DKIM/DMARC for transactional email on a custom domain
 
 simplicity:
   path: ai/skills/quality/simplicity.md

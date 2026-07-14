@@ -17,7 +17,7 @@ how infrastructure is written and managed — not what AWS services do (see `ai/
 | State backends and remote state | Python or shell scripts that invoke Terraform |
 | IAM least privilege in Terraform | Application code deployed onto the infrastructure |
 | Terraform testing (unit, integration, mocks) | Data pipeline logic (see `ai/domains/data-product.md`) |
-| CI/CD for Terraform (plan, apply, drift) | SaaS deployment to Railway/Vercel (see `ai/domains/saas.md`) |
+| CI/CD for Terraform (plan, apply, drift) | |
 | Tagging, budget, and cost governance | |
 | Environment promotion (dev → staging → prod) | |
 | Resource import (manual and discovery) | |

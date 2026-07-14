@@ -16,9 +16,9 @@ It is technology-agnostic at the pattern level but assumes AWS as the execution 
 | ETL pipeline design (Bronze / Silver / Gold) | AWS service configuration (see `ai/domains/aws.md`) |
 | Data contracts and schema enforcement | Terraform infrastructure for pipelines (see `ai/domains/terraform.md`) |
 | Data quality checks (Python, SQL, AWS) | Python job implementation patterns (see `ai/domains/python.md`) |
-| SQL transformations and workflow | SaaS operational analytics (see `ai/domains/saas.md`) |
-| Athena query patterns and cost control | Machine learning model training |
-| OCR normalisation and LLM extraction stages | Frontend dashboards (see `ai/domains/frontend.md`) |
+| SQL transformations and workflow | Machine learning model training |
+| Athena query patterns and cost control | Frontend dashboards (see `ai/domains/frontend.md`) |
+| OCR normalisation and LLM extraction stages | |
 
 ---
 
@@ -30,6 +30,7 @@ It is technology-agnostic at the pattern level but assumes AWS as the execution 
 | Data contracts | `ai/skills/data/data_contracts.md` | Data validation and schema enforcement |
 | Data quality | `ai/skills/data/data_quality_guidance.md` | Deterministic data quality checks for Python, SQL, and AWS workflows |
 | Athena patterns | `ai/skills/data/athena_patterns.md` | Query lifecycle, result pagination, partition pruning, and workgroup cost guardrails |
+| Athena vs Redshift | `ai/skills/data/athena_vs_redshift.md` | Decision guidance for serverless query vs provisioned warehouse |
 | SQL workflow | `ai/skills/sql/sql_workflow_guidance.md` | Maintainable SQL file organisation and transformation workflow guidance |
 
 ---
