@@ -23,6 +23,31 @@ dist/
 spec/
 
 # =========================
+# 🟨 JavaScript / TypeScript / Next.js
+# =========================
+node_modules/
+.next/
+out/
+.turbo/
+
+# =========================
+# 🐹 Go
+# =========================
+vendor/
+*.exe
+*.exe~
+*.dll
+*.so
+*.dylib
+*.test
+
+# =========================
+# 🦀 Rust
+# =========================
+target/
+Cargo.lock
+
+# =========================
 # 🧪 Logs & runtime artifacts
 # =========================
 logs/

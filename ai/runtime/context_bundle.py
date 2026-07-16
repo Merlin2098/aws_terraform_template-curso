@@ -52,6 +52,7 @@ def build_context_bundle(
         "tech_stack": {
             "languages": project["project"]["languages"],
             "data_libraries": project["data_stack"]["libraries"],
+            "js_frameworks": project["js_stack"]["frameworks"],
             "cloud": project["cloud"]["providers"],
             "infra_tools": project["cloud"]["infra_tools"],
         },

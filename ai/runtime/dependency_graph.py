@@ -13,7 +13,7 @@ from ai.tools.inspect_project import is_ignored_path
 
 VERSION = "0.2.0"
 
-DEFAULT_SCANNERS = ["python"]
+DEFAULT_SCANNERS = ["python", "javascript", "go", "rust"]
 
 
 @dataclass
@@ -42,6 +42,10 @@ class ScannerResult:
 
 
 ScannerFn = Callable[[Path], ScannerResult]
+
+
+def _safe_read_text(path: Path) -> str:
+    return path.read_text(encoding="utf-8")
 
 
 def _iter_files(project_root: Path, pattern: str) -> list[Path]:
@@ -258,9 +262,242 @@ def scan_javascript(project_root: Path) -> ScannerResult:
     return ScannerResult(nodes=list(nodes.values()), edges=edges, issues=issues)
 
 
+GO_MODULE_RE = re.compile(r"^\s*module\s+(\S+)", re.MULTILINE)
+GO_IMPORT_BLOCK_RE = re.compile(r"import\s*\(([^)]*)\)", re.DOTALL)
+GO_IMPORT_LINE_RE = re.compile(r"import\s+\"([^\"]+)\"")
+GO_IMPORT_PATH_RE = re.compile(r"(?:\w+\s+)?\"([^\"]+)\"")
+
+
+def _go_module_path(project_root: Path) -> str | None:
+    go_mod = project_root / "go.mod"
+    if not go_mod.exists():
+        return None
+    match = GO_MODULE_RE.search(_safe_read_text(go_mod))
+    return match.group(1) if match else None
+
+
+def _go_package_name(project_root: Path, path: Path) -> str:
+    """Go packages are one per directory, not one per file."""
+    rel_dir = path.relative_to(project_root).parent.as_posix()
+    return "." if rel_dir == "." else rel_dir
+
+
+def scan_go(project_root: Path) -> ScannerResult:
+    """Build Go package/import nodes and edges via regex-based import detection.
+
+    Go has no import-parsing library in the Python stdlib, so imports are
+    detected with a regex over ``import (...)`` blocks and single-line
+    ``import "..."`` statements. Unlike Python/JS, Go packages are one per
+    *directory* — files sharing a directory collapse into a single node.
+    """
+    files = _iter_files(project_root, "*.go")
+    module_root = _go_module_path(project_root)
+
+    package_to_files: dict[str, list[str]] = {}
+    for path in files:
+        package = _go_package_name(project_root, path)
+        package_to_files.setdefault(package, []).append(
+            path.relative_to(project_root).as_posix()
+        )
+
+    packages = set(package_to_files)
+    nodes: dict[str, Node] = {}
+    edges: list[Edge] = []
+    issues: list[dict[str, str]] = []
+
+    for package, rel_paths in package_to_files.items():
+        nodes[f"module:{package}"] = Node(
+            id=f"module:{package}",
+            kind="go_module",
+            label=package,
+            module=package,
+            file_path=sorted(rel_paths)[0],
+        )
+
+    for package, rel_paths in package_to_files.items():
+        source = f"module:{package}"
+        for rel_path in rel_paths:
+            path = project_root / rel_path
+            try:
+                text = _safe_read_text(path)
+            except Exception as exc:
+                issues.append({"file": rel_path, "message": str(exc)})
+                continue
+
+            import_paths: list[tuple[str, int | None]] = []
+            for block_match in GO_IMPORT_BLOCK_RE.finditer(text):
+                block_start_line = text.count("\n", 0, block_match.start()) + 1
+                for offset, line in enumerate(block_match.group(1).splitlines()):
+                    path_match = GO_IMPORT_PATH_RE.search(line)
+                    if path_match:
+                        import_paths.append(
+                            (path_match.group(1), block_start_line + offset)
+                        )
+            for lineno, line in enumerate(text.splitlines(), start=1):
+                single_match = GO_IMPORT_LINE_RE.search(line)
+                if single_match and "(" not in line:
+                    import_paths.append((single_match.group(1), lineno))
+
+            for imported, lineno in import_paths:
+                internal_package = None
+                if module_root and imported.startswith(module_root):
+                    candidate = imported[len(module_root) :].lstrip("/")
+                    if candidate in packages:
+                        internal_package = candidate
+                    elif candidate == "" and "." in packages:
+                        internal_package = "."
+
+                if internal_package is not None:
+                    target = f"module:{internal_package}"
+                else:
+                    target = f"external:{imported}"
+                    nodes.setdefault(
+                        target,
+                        Node(
+                            id=target,
+                            kind="external_package",
+                            label=imported,
+                            module=imported,
+                        ),
+                    )
+
+                edges.append(
+                    Edge(
+                        source=source,
+                        target=target,
+                        kind="imports",
+                        raw=imported,
+                        lineno=lineno,
+                    )
+                )
+
+    return ScannerResult(nodes=list(nodes.values()), edges=edges, issues=issues)
+
+
+RUST_USE_RE = re.compile(r"use\s+((?:crate|self|super)(?:::\w+)*|\w[\w:]*)")
+RUST_MOD_RE = re.compile(r"^\s*(?:pub\s+)?mod\s+(\w+)\s*;", re.MULTILINE)
+
+
+def _rust_module_name(project_root: Path, path: Path) -> str:
+    rel = path.relative_to(project_root).as_posix()
+    if rel.endswith(".rs"):
+        rel = rel[: -len(".rs")]
+
+    parts = [part for part in rel.split("/") if part]
+    stem = parts[-1] if parts else ""
+
+    if stem == "mod":
+        # foo/bar/mod.rs is the module foo::bar.
+        parts = parts[:-1]
+    elif stem in {"main", "lib"}:
+        # <crate_root>/src/main.rs or lib.rs is the crate root itself,
+        # regardless of how deep the "src" directory sits.
+        parts = parts[:-1]
+        if parts and parts[-1] == "src":
+            parts = parts[:-1]
+        else:
+            parts = []
+
+    return "::".join(parts) or "crate"
+
+
+def scan_rust(project_root: Path) -> ScannerResult:
+    """Build Rust module/import nodes and edges via regex-based import detection.
+
+    Rust has no import-parsing library in the Python stdlib, so ``use``
+    statements and ``mod`` declarations are detected with regexes. Internal
+    modules resolve via ``crate::``/``self::``/``super::`` paths or declared
+    ``mod`` names; everything else is treated as an external crate.
+    """
+    files = _iter_files(project_root, "*.rs")
+    module_to_file = {
+        _rust_module_name(project_root, path): path.relative_to(project_root).as_posix()
+        for path in files
+    }
+    modules = set(module_to_file)
+    nodes: dict[str, Node] = {}
+    edges: list[Edge] = []
+    issues: list[dict[str, str]] = []
+
+    for module, rel_path in module_to_file.items():
+        nodes[f"module:{module}"] = Node(
+            id=f"module:{module}",
+            kind="rust_module",
+            label=module,
+            module=module,
+            file_path=rel_path,
+        )
+
+    for module, rel_path in module_to_file.items():
+        path = project_root / rel_path
+        try:
+            text = _safe_read_text(path)
+        except Exception as exc:
+            issues.append({"file": rel_path, "message": str(exc)})
+            continue
+
+        source = f"module:{module}"
+        for lineno, line in enumerate(text.splitlines(), start=1):
+            for match in RUST_MOD_RE.finditer(line):
+                mod_name = match.group(1)
+                candidate = f"{module}::{mod_name}" if module != "crate" else mod_name
+                internal = _pick_internal(candidate, modules) or (
+                    candidate if candidate in modules else None
+                )
+                target = f"module:{internal}" if internal else f"module:{candidate}"
+                nodes.setdefault(
+                    target, Node(id=target, kind="rust_module", label=candidate)
+                )
+                edges.append(
+                    Edge(
+                        source=source,
+                        target=target,
+                        kind="declares",
+                        raw=mod_name,
+                        lineno=lineno,
+                    )
+                )
+
+            for match in RUST_USE_RE.finditer(line):
+                imported = match.group(1)
+                root_segment = imported.split("::")[0]
+
+                if root_segment in {"crate", "self", "super"}:
+                    internal = _pick_internal(imported, modules)
+                    target = f"module:{internal}" if internal else f"module:{imported}"
+                    nodes.setdefault(
+                        target, Node(id=target, kind="rust_module", label=imported)
+                    )
+                else:
+                    target = f"external:{root_segment}"
+                    nodes.setdefault(
+                        target,
+                        Node(
+                            id=target,
+                            kind="external_package",
+                            label=root_segment,
+                            module=root_segment,
+                        ),
+                    )
+
+                edges.append(
+                    Edge(
+                        source=source,
+                        target=target,
+                        kind="imports",
+                        raw=imported,
+                        lineno=lineno,
+                    )
+                )
+
+    return ScannerResult(nodes=list(nodes.values()), edges=edges, issues=issues)
+
+
 SCANNERS: dict[str, ScannerFn] = {
     "python": scan_python,
     "javascript": scan_javascript,
+    "go": scan_go,
+    "rust": scan_rust,
 }
 
 

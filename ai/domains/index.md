@@ -101,9 +101,30 @@ Backend code patterns: project structure, testing, error handling, logging, ML c
 
 ---
 
+### Go — [descriptor](go.md)
+
+Backend service patterns: project layout, package/module conventions, testing.
+
+| Skill | Path |
+|---|---|
+| Project guidance | `ai/skills/go/go_project_guidance.md` |
+
+---
+
+### Rust — [descriptor](rust.md)
+
+Backend/systems code patterns: Cargo layout, module conventions, testing and `clippy`.
+
+| Skill | Path |
+|---|---|
+| Project guidance | `ai/skills/rust/rust_project_guidance.md` |
+
+---
+
 ### Frontend (AWS-integrated) — [descriptor](frontend.md)
 
-React SPA patterns deployed to AWS (S3 + CloudFront).
+React and Next.js SPA/app patterns deployed to AWS (S3 + CloudFront) or
+Next.js-native hosting.
 
 | Skill | Path |
 |---|---|

@@ -64,6 +64,9 @@ def _rel(path: Path, project_root: Path) -> str:
     return path.resolve().relative_to(project_root.resolve()).as_posix()
 
 
+JS_SUFFIXES = {".js", ".jsx", ".ts", ".tsx"}
+
+
 def _detect_languages(project_root: Path, files: list[Path]) -> dict[str, Any]:
     counts = Counter()
     languages: set[str] = set()
@@ -79,12 +82,23 @@ def _detect_languages(project_root: Path, files: list[Path]) -> dict[str, Any]:
         elif suffix == ".tf":
             languages.add("terraform")
             counts["terraform"] += 1
+        elif suffix in JS_SUFFIXES:
+            languages.add("javascript")
+            counts["javascript"] += 1
+        elif suffix == ".go":
+            languages.add("go")
+            counts["go"] += 1
+        elif suffix == ".rs":
+            languages.add("rust")
+            counts["rust"] += 1
 
     primary_language = None
-    for candidate in ("python", "sql", "terraform"):
+    for candidate in ("python", "sql", "terraform", "javascript", "go", "rust"):
         if counts[candidate]:
             primary_language = candidate
             break
+
+    has_package_json = any(path.name == "package.json" for path in files)
 
     project_types: set[str] = set()
     if primary_language == "python":
@@ -93,6 +107,10 @@ def _detect_languages(project_root: Path, files: list[Path]) -> dict[str, Any]:
         project_types.add("data")
     if counts["terraform"] or (project_root / "infra").exists():
         project_types.add("infrastructure")
+    if counts["javascript"] and has_package_json:
+        project_types.add("frontend")
+    if counts["go"] or counts["rust"]:
+        project_types.add("service")
     if not project_types:
         project_types.add("unknown")
 
@@ -144,6 +162,77 @@ def _detect_data_stack(project_root: Path, files: list[Path]) -> dict[str, Any]:
     }
 
 
+JS_FRAMEWORKS = {
+    "react": "react",
+    "next": "nextjs",
+}
+JS_BUILD_TOOLS = {
+    "vite": "vite",
+}
+
+
+def _detect_js_stack(project_root: Path, files: list[Path]) -> dict[str, Any]:
+    frameworks: set[str] = set()
+    build_tools: set[str] = set()
+
+    for path in files:
+        if path.name != "package.json":
+            continue
+
+        try:
+            manifest = json.loads(_safe_read(path))
+        except json.JSONDecodeError:
+            continue
+        if not isinstance(manifest, dict):
+            continue
+
+        dependency_names: set[str] = set()
+        for key in ("dependencies", "devDependencies"):
+            deps = manifest.get(key)
+            if isinstance(deps, dict):
+                dependency_names.update(deps.keys())
+
+        for package_name, framework in JS_FRAMEWORKS.items():
+            if package_name in dependency_names:
+                frameworks.add(framework)
+        for package_name, build_tool in JS_BUILD_TOOLS.items():
+            if package_name in dependency_names:
+                build_tools.add(build_tool)
+
+    return {
+        "js_stack": {
+            "frameworks": sorted(frameworks),
+            "build_tools": sorted(build_tools),
+        }
+    }
+
+
+def _detect_go_rust_stack(project_root: Path) -> dict[str, Any]:
+    go_module = None
+    go_mod_path = project_root / "go.mod"
+    if go_mod_path.exists():
+        match = re.search(r"^\s*module\s+(\S+)", _safe_read(go_mod_path), re.MULTILINE)
+        go_module = match.group(1) if match else None
+
+    rust_crates: list[str] = []
+    cargo_toml_path = project_root / "Cargo.toml"
+    if cargo_toml_path.exists():
+        import tomllib
+
+        try:
+            cargo_doc = tomllib.loads(_safe_read(cargo_toml_path))
+        except tomllib.TOMLDecodeError:
+            cargo_doc = {}
+        package_name = (cargo_doc.get("package") or {}).get("name")
+        if package_name:
+            rust_crates.append(str(package_name))
+
+    return {
+        "go_stack": {"module": go_module},
+        "rust_stack": {"crates": sorted(rust_crates)},
+    }
+
+
 def _detect_cloud(project_root: Path, files: list[Path]) -> dict[str, Any]:
     providers: set[str] = set()
     infra_tools: set[str] = set()
@@ -170,6 +259,8 @@ def _detect_cloud(project_root: Path, files: list[Path]) -> dict[str, Any]:
             or "arn:aws:" in text
             or "boto3" in text
             or "awswrangler" in text
+            or "@aws-sdk/" in text
+            or '"aws-sdk"' in text
         ):
             providers.add("aws")
 
@@ -260,6 +351,8 @@ def inspect_project(project_root: Path) -> dict[str, Any]:
     language_info = _detect_languages(project_root, files)
     data_info = _detect_data_stack(project_root, files)
     cloud_info = _detect_cloud(project_root, files)
+    js_info = _detect_js_stack(project_root, files)
+    go_rust_info = _detect_go_rust_stack(project_root)
 
     return {
         "version": VERSION,
@@ -268,6 +361,9 @@ def inspect_project(project_root: Path) -> dict[str, Any]:
         "project": language_info["project"],
         "structure": language_info["structure"],
         "data_stack": data_info["data_stack"],
+        "js_stack": js_info["js_stack"],
+        "go_stack": go_rust_info["go_stack"],
+        "rust_stack": go_rust_info["rust_stack"],
         "cloud": cloud_info["cloud"],
         "entrypoints": _entrypoints(project_root),
         "core_modules": _core_modules(project_root),

@@ -6,6 +6,15 @@ Guidance for building and deploying React SPAs that integrate with AWS backends
 (API Gateway, Lambda, S3, CloudFront, Cognito). This domain covers the build
 toolchain, AWS deployment pattern, API client design, and file upload UX.
 
+Next.js projects are detected automatically (via `package.json`'s `next`
+dependency — see `ai/tools/inspect_project.py`'s `js_stack` detection) and
+fall under this domain too. The existing skill below is written for a
+Vite SPA; Next.js differs in env-variable convention (`NEXT_PUBLIC_*` instead
+of `VITE_*`/`import.meta.env`) and typically uses SSR/App Router routing
+instead of a client-only build — apply the general React/API-client/upload
+guidance here, but do not assume the Vite-specific deploy sequence applies
+as-is to a Next.js project. A dedicated Next.js skill is not written yet.
+
 ---
 
 ## Scope
@@ -13,7 +22,8 @@ toolchain, AWS deployment pattern, API client design, and file upload UX.
 | In scope | Out of scope |
 |---|---|
 | React + Vite build and environment configuration | AWS infrastructure declaration (see `ai/domains/terraform.md`) |
-| S3 + CloudFront deploy and cache invalidation | Python Lambda code (see `ai/domains/python.md`) |
+| Next.js projects (detected via `package.json`, general React guidance applies) | Python Lambda code (see `ai/domains/python.md`) |
+| S3 + CloudFront deploy and cache invalidation | |
 | Axios client with API Gateway auth headers | |
 | File upload via S3 presigned URLs | |
 | Loading / error / empty state conventions | |

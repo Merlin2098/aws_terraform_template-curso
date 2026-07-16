@@ -86,6 +86,14 @@ python_testing_quality:
   path: ai/skills/python/python_testing_quality.md
   description: Testing guidance for Python automation, data workflows, and AWS boundaries
 
+go_project_guidance:
+  path: ai/skills/go/go_project_guidance.md
+  description: Idiomatic Go layout, module/package conventions, testing and error-handling basics
+
+rust_project_guidance:
+  path: ai/skills/rust/rust_project_guidance.md
+  description: Idiomatic Cargo layout, module conventions, Result-based error handling, testing and clippy
+
 sql_workflow_guidance:
   path: ai/skills/sql/sql_workflow_guidance.md
   description: Maintainable SQL file organization and transformation workflow guidance

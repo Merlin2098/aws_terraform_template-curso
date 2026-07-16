@@ -5,8 +5,10 @@ from pathlib import Path
 from ai.runtime.dependency_graph import (
     DEFAULT_SCANNERS,
     build_dependency_graph,
+    scan_go,
     scan_javascript,
     scan_python,
+    scan_rust,
 )
 
 
@@ -60,6 +62,63 @@ def test_scan_javascript_resolves_relative_and_external_imports(tmp_path: Path) 
     assert ("module:src/App", "external:react") in edge_targets
 
 
+def test_scan_go_builds_internal_and_external_nodes(tmp_path: Path) -> None:
+    _write(tmp_path / "go.mod", "module example.com/demo\n\ngo 1.22\n")
+    _write(
+        tmp_path / "main.go",
+        'package main\n\nimport (\n\t"fmt"\n\n\t"example.com/demo/internal/greet"\n)\n\n'
+        'func main() {\n\tfmt.Println(greet.Hello())\n}\n',
+    )
+    _write(
+        tmp_path / "internal" / "greet" / "greet.go",
+        'package greet\n\nimport "strings"\n\nfunc Hello() string {\n\treturn strings.ToUpper("hi")\n}\n',
+    )
+    _write(
+        tmp_path / "ai" / "context.yaml",
+        "ignore_dirs: []\nignore_top_level_files: []\n",
+    )
+
+    result = scan_go(tmp_path)
+
+    node_ids = {node.id for node in result.nodes}
+    assert "module:." in node_ids
+    assert "module:internal/greet" in node_ids
+    assert "external:fmt" in node_ids
+    assert "external:strings" in node_ids
+
+    edge_targets = {(edge.source, edge.target) for edge in result.edges}
+    assert ("module:.", "module:internal/greet") in edge_targets
+    assert ("module:.", "external:fmt") in edge_targets
+    assert ("module:internal/greet", "external:strings") in edge_targets
+
+
+def test_scan_rust_resolves_crate_and_external_imports(tmp_path: Path) -> None:
+    _write(
+        tmp_path / "src" / "main.rs",
+        "mod helpers;\n\nuse crate::helpers::greet;\nuse serde::Serialize;\n\n"
+        "fn main() {\n    greet();\n}\n",
+    )
+    _write(
+        tmp_path / "src" / "helpers.rs",
+        "pub fn greet() {\n    println!(\"hi\");\n}\n",
+    )
+    _write(
+        tmp_path / "ai" / "context.yaml",
+        "ignore_dirs: []\nignore_top_level_files: []\n",
+    )
+
+    result = scan_rust(tmp_path)
+
+    node_ids = {node.id for node in result.nodes}
+    assert "module:crate" in node_ids
+    assert "module:helpers" in node_ids
+    assert "external:serde" in node_ids
+
+    edge_targets = {(edge.source, edge.target) for edge in result.edges}
+    assert ("module:crate", "module:helpers") in edge_targets
+    assert ("module:crate", "external:serde") in edge_targets
+
+
 def test_build_dependency_graph_with_explicit_scanners(tmp_path: Path) -> None:
     _write(tmp_path / "main.py", "import os\n")
     _write(tmp_path / "src" / "App.tsx", "import React from 'react';\n")
@@ -78,7 +137,7 @@ def test_build_dependency_graph_with_explicit_scanners(tmp_path: Path) -> None:
     assert "external:react" in node_ids
 
 
-def test_build_dependency_graph_defaults_to_python_scanner(tmp_path: Path) -> None:
+def test_build_dependency_graph_defaults_to_all_language_scanners(tmp_path: Path) -> None:
     _write(tmp_path / "main.py", "import os\n")
     _write(
         tmp_path / "ai" / "context.yaml",
@@ -88,3 +147,20 @@ def test_build_dependency_graph_defaults_to_python_scanner(tmp_path: Path) -> No
     graph = build_dependency_graph(tmp_path)
 
     assert graph["scanners"] == list(DEFAULT_SCANNERS)
+    assert set(DEFAULT_SCANNERS) == {"python", "javascript", "go", "rust"}
+
+
+def test_build_dependency_graph_covers_go_and_rust_by_default(tmp_path: Path) -> None:
+    _write(tmp_path / "go.mod", "module example.com/demo\n\ngo 1.22\n")
+    _write(tmp_path / "main.go", 'package main\n\nimport "fmt"\n\nfunc main() {}\n')
+    _write(tmp_path / "src" / "main.rs", "fn main() {}\n")
+    _write(
+        tmp_path / "ai" / "context.yaml",
+        "ignore_dirs: []\nignore_top_level_files: []\n",
+    )
+
+    graph = build_dependency_graph(tmp_path)
+
+    node_ids = {node["id"] for node in graph["nodes"]}
+    assert "module:." in node_ids
+    assert "module:crate" in node_ids

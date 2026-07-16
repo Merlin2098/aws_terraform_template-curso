@@ -8,6 +8,7 @@ ignore_dirs:
   - .ai
   - .git
   - .mypy_cache
+  - .next
   - .pytest_cache
   - .ruff_cache
   - .venv
@@ -18,12 +19,15 @@ ignore_dirs:
   - dist
   - docs
   - node_modules
+  - target
+  - vendor
   - venv
 
 treemap_ignore_dirs:
   - .ai
   - .git
   - .mypy_cache
+  - .next
   - .pytest_cache
   - .ruff_cache
   - .venv
@@ -31,6 +35,8 @@ treemap_ignore_dirs:
   - build
   - dist
   - node_modules
+  - target
+  - vendor
   - venv
 
 ignore_top_level_files:
