@@ -16,9 +16,21 @@ write_phase() {
     printf '\n=== %s ===\n' "$1"
 }
 
+resolve_venv_python() {
+    local venv_dir="$1"
+    if [[ -x "${venv_dir}/bin/python" ]]; then
+        printf '%s\n' "${venv_dir}/bin/python"
+    elif [[ -x "${venv_dir}/Scripts/python.exe" ]]; then
+        printf '%s\n' "${venv_dir}/Scripts/python.exe"
+    else
+        printf "No python interpreter found under '%s' (checked bin/python and Scripts/python.exe).\n" "${venv_dir}" >&2
+        exit 1
+    fi
+}
+
 usage() {
     cat <<'EOF'
-Usage: ./scripts/linux/update_venv.sh [options]
+Usage: ./scripts/python/update_venv.sh [options]
 
 Options:
   --include-dev       Install requirements-dev.txt explicitly.
@@ -64,10 +76,10 @@ parse_args() {
 parse_args "$@"
 
 if [[ ! -d "${REPO_ROOT}/.venv" ]]; then
-    printf "No .venv directory was found. Run ./scripts/linux/setup_env.sh first.\n" >&2
+    printf "No .venv directory was found. Run ./scripts/python/setup_env.sh first.\n" >&2
     exit 1
 fi
-venv_python="${REPO_ROOT}/.venv/bin/python"
+venv_python="$(resolve_venv_python "${REPO_ROOT}/.venv")"
 
 write_step "Starting virtual environment update from requirements files."
 

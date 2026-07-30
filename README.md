@@ -17,7 +17,6 @@ basics:
 * how Python packaging and deployment bundles should work
 * how SQL, config, infrastructure, and tests should be organized
 * how AI guidance files should live in the repo without becoming runtime logic
-* how to support Windows-restricted environments alongside standard shell flows
 * how project contracts (specs) should be separated from patterns (skills) and hard rules (principles)
 
 This template solves that by giving you a consistent installation path and a
@@ -27,13 +26,13 @@ simple operational model that can be copied into a host repository.
 
 The template currently supports:
 
-* installation into another repository through Windows and Linux installer entrypoints
+* installation into another repository through the Linux installer entrypoint
 * host setup with `pip` and `requirements.txt`
 * optional copying of `src/`, `infra/`, and `tests/`
 * a `specs/` layer with a clear separation between template-owned specs (`specs/template/`) and host-authored specs (`specs/project/`)
 * an opt-in remote Terraform backend example using S3 native locking (no DynamoDB)
 * explicit project commands for packaging, tests, and AI refresh
-* Windows and Linux setup wrappers for creating and updating the virtual environment
+* a Git Bash setup wrapper for creating and updating the virtual environment
 
 There is no runtime dependency on generated AI context, no skill orchestration,
 and no AI logic in execution.
@@ -69,18 +68,14 @@ tests/                 Lightweight validation
 python scripts/package.py
 python scripts/testing/run_pytest.py
 python scripts/hooks/ai_refresh.py
-./scripts/linux/setup_env.sh
-./scripts/linux/update_venv.sh
-./scripts/windows/setup_env.ps1
-./scripts/windows/update_venv.ps1
-python install_windows.py --target /path/to/repo --dry-run
+./scripts/python/setup_env.sh
+./scripts/python/update_venv.sh
 python3 install_linux.py --target /path/to/repo --dry-run
 terraform -chdir=infra init
 terraform -chdir=infra plan
 ```
 
-For Linux setup, see `docs/linux_setup/`. For Windows-specific setup, see
-`docs/windows_setup/`.
+All commands run from Git Bash. For setup details, see `docs/linux_setup/`.
 
 For Terraform design guardrails used by this template and intended host
 repositories, see `docs/terra_principles.md`.
@@ -89,10 +84,9 @@ repositories, see `docs/terra_principles.md`.
 
 The template is installed into a host repository with:
 
-* `install_windows.py` for Windows-friendly setup
-* `install_linux.py` for Linux and non-GUI environments
+* `install_linux.py`, run from Git Bash
 
-Both installers can:
+The installer can:
 
 * preview changes with `--dry-run`
 * optionally include the starter `src/`, `infra/`, and `tests/` trees
@@ -104,9 +98,9 @@ The installer copies template files into the host repository, but it does not:
 * initialize Git
 * execute pre-commit in the host
 
-Use `install_linux.py` or `install_windows.py` only to copy the template into a
-host repository. To bootstrap the current repository environment, use the OS
-setup wrappers under `scripts/linux/` or `scripts/windows/`.
+Use `install_linux.py` only to copy the template into a host repository. To
+bootstrap the current repository environment, use the setup wrappers under
+`scripts/python/`.
 
 ## Dependency Model
 
@@ -119,25 +113,14 @@ The template manages host dependencies with `pip`:
 
 ## Linux Workflow
 
-Linux support includes setup and maintenance helpers under `scripts/linux/`:
+Git Bash support includes setup and maintenance helpers under `scripts/python/`:
 
-* `./scripts/linux/setup_env.sh` — creates `.venv` and installs dependencies
-* `./scripts/linux/update_venv.sh` — updates dependencies in an existing `.venv`
+* `./scripts/python/setup_env.sh` — creates `.venv` and installs dependencies
+* `./scripts/python/update_venv.sh` — updates dependencies in an existing `.venv`
 
 Detailed setup and day-to-day command references live in:
 
 * `docs/linux_setup/README.md`
-
-## Windows Workflow
-
-Windows support includes setup and maintenance helpers under `scripts/windows/`:
-
-* `.\scripts\windows\setup_env.ps1` — creates `.venv` and installs dependencies
-* `.\scripts\windows\update_venv.ps1` — updates dependencies in an existing `.venv`
-
-Detailed setup and day-to-day command references live in:
-
-* `docs/windows_setup/README.md`
 
 ## AI Guidance Files
 

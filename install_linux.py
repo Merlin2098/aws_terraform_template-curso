@@ -111,7 +111,7 @@ def main() -> None:
     print_summary(summary, dry_run=args.dry_run)
     print(
         "\nNext step:\n"
-        "  ./scripts/linux/setup_env.sh\n"
+        "  ./scripts/python/setup_env.sh\n"
         "The installer did not create or synchronize .venv."
     )
 

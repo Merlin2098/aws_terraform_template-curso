@@ -64,7 +64,6 @@ Key constraints from `AGENTS.md` that are enforced at the Terraform level:
 Preferred execution:
 
 - Use `make <target>` when available.
-- On Windows, use `scripts/windows/run_make.ps1` or the documented wrapper.
 - Run Terraform commands directly from `infra/` — never introduce hidden automation.
 
 ---

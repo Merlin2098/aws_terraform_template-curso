@@ -19,7 +19,7 @@ write_phase() {
 
 usage() {
     cat <<'EOF'
-Usage: ./scripts/linux/setup_env.sh [options]
+Usage: ./scripts/python/setup_env.sh [options]
 
 Options:
   --python-path PATH  Use this Python interpreter explicitly.
@@ -33,6 +33,18 @@ test_command() {
     local command="$1"
     shift
     "${command}" "$@" --version >/dev/null 2>&1
+}
+
+resolve_venv_python() {
+    local venv_dir="$1"
+    if [[ -x "${venv_dir}/bin/python" ]]; then
+        printf '%s\n' "${venv_dir}/bin/python"
+    elif [[ -x "${venv_dir}/Scripts/python.exe" ]]; then
+        printf '%s\n' "${venv_dir}/Scripts/python.exe"
+    else
+        printf "No python interpreter found under '%s' (checked bin/python and Scripts/python.exe).\n" "${venv_dir}" >&2
+        exit 1
+    fi
 }
 
 resolve_python_command() {
@@ -120,7 +132,7 @@ if [[ ! -d "${REPO_ROOT}/.venv" ]]; then
 else
     write_step "[venv] Reusing existing .venv"
 fi
-venv_python="${REPO_ROOT}/.venv/bin/python"
+venv_python="$(resolve_venv_python "${REPO_ROOT}/.venv")"
 
 write_phase "Phase 3: Install Dependencies"
 if [[ ! -f "${REPO_ROOT}/requirements.txt" ]]; then

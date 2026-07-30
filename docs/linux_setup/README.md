@@ -8,10 +8,10 @@ install it into another repository.
 From the repository root:
 
 ```bash
-./scripts/linux/setup_env.sh
+./scripts/python/setup_env.sh
 ```
 
-This Linux wrapper resolves Python automatically, creates `.venv` with
+This Git Bash wrapper resolves Python automatically, creates `.venv` with
 `python -m venv`, and installs dependencies with `pip`.
 
 By default, the setup installs:
@@ -37,14 +37,14 @@ To run all configured hooks manually:
 To refresh the local environment after editing dependencies:
 
 ```bash
-./scripts/linux/update_venv.sh
+./scripts/python/update_venv.sh
 ```
 
 To sync only runtime dependencies (skip development tooling):
 
 ```bash
-./scripts/linux/setup_env.sh --no-dev
-./scripts/linux/update_venv.sh --no-dev
+./scripts/python/setup_env.sh --no-dev
+./scripts/python/update_venv.sh --no-dev
 ```
 
 ## Install This Template Into Another Repo
@@ -68,5 +68,5 @@ python3 install_linux.py --target /path/to/target-repo --force
 ```
 
 `install_linux.py` copies the template into a host repository. It does not
-bootstrap the current repository environment; use `./scripts/linux/setup_env.sh`
+bootstrap the current repository environment; use `./scripts/python/setup_env.sh`
 for that.

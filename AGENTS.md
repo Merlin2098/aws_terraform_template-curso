@@ -72,8 +72,7 @@ Use explicit project commands only.
 Preferred workflow:
 
 * run scripts directly with `python scripts/<script>.py`
-* on Linux, use the documented wrapper flow under `scripts/linux/`
-* on Windows, use the documented wrapper flow under `scripts/windows/`
+* use Git Bash as the default terminal; use the documented wrapper flow under `scripts/python/`
 * run Terraform commands directly and intentionally from `infra/`
 
 Do not introduce hidden automation.
