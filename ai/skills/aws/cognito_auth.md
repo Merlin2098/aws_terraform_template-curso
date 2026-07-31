@@ -224,4 +224,4 @@ output "user_pool_domain" {
 - `ai/skills/aws/api_gateway.md` — JWT authoriser attachment to routes
 - `ai/skills/frontend/react_vite_aws.md` — `VITE_USER_POOL_ID` and `VITE_USER_POOL_CLIENT_ID` setup
 - `ai/skills/frontend/api_client_patterns.md` — token injection in the request interceptor
-- `ai/skills/terraform/iam_least_privilege.md` — scoping Lambda IAM after auth validation
+- `ai/skills/aws/iam_policies.md` — scoping Lambda IAM after auth validation

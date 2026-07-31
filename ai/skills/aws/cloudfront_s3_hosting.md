@@ -215,4 +215,4 @@ output "frontend_bucket_name" {
 - `ai/skills/frontend/react_vite_aws.md` — frontend build and deploy sequence
 - `ai/skills/terraform/terraform_observability.md` — log group patterns
 - `ai/skills/terraform/terraform_governance.md` — tagging and cost alert
-- `ai/skills/terraform/terraform_security.md` — encryption and access control
+- `ai/skills/terraform/terraform_governance.md` — tagging, budget, and cost governance

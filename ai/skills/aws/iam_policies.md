@@ -202,5 +202,4 @@ course — introduce only if students provision their own IAM resources.
 
 - `ai/skills/aws/account_bootstrap_console.md` — creating the human IAM user this policy attaches to
 - `ai/skills/aws/aws_cli.md` — validating which identity a profile authenticates as
-- `ai/skills/terraform/iam_least_privilege.md` — least-privilege principles at the Terraform-module level
 - `ai/policies/global.md` Policy 010 — IAM cross-module placement rule

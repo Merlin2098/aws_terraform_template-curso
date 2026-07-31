@@ -19,10 +19,10 @@ cobertura que motivó el cierre de brechas registrado aquí).
 
 | Dominio | Skills in-scope del curso |
 |---|---|
-| `aws` | `aws_cli`, `account_bootstrap_console`, `iam_policies`, `s3_data_lake`, `dynamodb_modeling`, `rds_overview`, `lambda_functions`, `lambda_packaging`, `glue_jobs`, `glue_crawler_catalog`, `lake_formation_intro`, `step_functions`, `eventbridge`, `kinesis_streaming_intro`, `bedrock_permissions`, `cloudwatch_logging` |
+| `aws` | `aws_cli`, `account_bootstrap_console`, `iam_policies`, `s3_data_lake`, `dynamodb_modeling`, `rds_overview`, `lambda_functions`, `lambda_packaging`, `glue_jobs`, `glue_crawler_catalog`, `lake_formation_intro`, `step_functions`, `eventbridge`, `kinesis_streaming_intro`, `bedrock_permissions` |
 | `data` | `athena_patterns`, `athena_vs_redshift`, `etl_patterns`, `data_contracts`, `data_quality_guidance` |
 | `python` | `bedrock_client`, `error_handling_pipeline`, `python_project_guidance` |
-| `terraform` | `modules`, `state_management`, `terraform_style`, `terraform_governance`, `iam_least_privilege` |
+| `terraform` | `modules`, `state_management`, `terraform_governance` |
 | `quality` / `docs` | `simplicity`, `over_engineering_review`, `doc_review`, `commit_messages` (soporte transversal para S9) |
 
 Todo lo que no aparece en esta lista (dominio `frontend`, `cognito_auth`,
@@ -43,6 +43,7 @@ host de esta plantilla.
 | `ai/skills/aws/account_bootstrap_console.md` | Bootstrap día-1 en consola: usuario IAM, MFA, Budget con alerta antes de que exista Terraform |
 | `ai/skills/aws/aws_cli.md` | Instalación, `aws configure`, perfiles, precedencia de credenciales, validación de acceso |
 | `ai/skills/aws/iam_policies.md` | Usuario humano vs role, principio de mínimo privilegio |
+| `docs/education/mcp_setup.md` | Instalación de los MCP de AWS Documentation y Terraform en Claude Code |
 
 ### Sesión 2 — Infrastructure as Code con Terraform
 
@@ -50,8 +51,13 @@ host de esta plantilla.
 |---|---|
 | `ai/skills/terraform/modules.md` | Estructura de módulo (variables/main/outputs), buenas prácticas |
 | `ai/skills/terraform/state_management.md` | Backend local vs S3, locking nativo, higiene de state |
-| `ai/skills/terraform/terraform_style.md` | Convenciones de estilo y organización |
 | `ai/context.yaml` + `ai/tools/refresh_context.py` + `ai/hooks/treemap.py` | Implementación real de "pre-commit para generar contexto del agente" |
+
+> Convenciones de estilo genéricas de Terraform y el principio de mínimo
+> privilegio de IAM (antes cubiertos por `terraform_style.md` e
+> `iam_least_privilege.md`, hoy eliminados por redundantes) se consultan
+> mediante el MCP de Terraform y `ai/skills/aws/iam_policies.md`
+> respectivamente — ver `docs/education/mcp_setup.md`.
 
 ### Sesión 3 — Data Lakes con Amazon S3
 

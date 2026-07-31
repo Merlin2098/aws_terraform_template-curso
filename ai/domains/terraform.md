@@ -2,10 +2,14 @@
 
 ## Purpose
 
-Guidance for declaring, testing, and maintaining AWS infrastructure as code using
-Terraform. This domain covers module design, state management, CI/CD integration,
-security, governance, and environment promotion. It is the authoritative source for
-how infrastructure is written and managed — not what AWS services do (see `ai/domains/aws.md`).
+Guidance for declaring and maintaining this project's AWS infrastructure as code
+using Terraform — the project-specific conventions and decisions (module design,
+state layout, tagging/budget governance, environment promotion) that a generic
+Terraform reference cannot know. It is the authoritative source for how
+infrastructure is written and managed in this repo — not what AWS services do
+(see `ai/domains/aws.md`), and not generic Terraform mechanics already covered by
+the Terraform MCP or official documentation (style/formatting, CI/CD pipeline
+shapes, mocks, stacks, resource import, security fundamentals).
 
 ---
 
@@ -13,15 +17,11 @@ how infrastructure is written and managed — not what AWS services do (see `ai/
 
 | In scope | Out of scope |
 |---|---|
-| Terraform module design and style | AWS service behaviour and usage patterns (see `ai/domains/aws.md`) |
-| State backends and remote state | Python or shell scripts that invoke Terraform |
-| IAM least privilege in Terraform | Application code deployed onto the infrastructure |
-| Terraform testing (unit, integration, mocks) | Data pipeline logic (see `ai/domains/data-product.md`) |
-| CI/CD for Terraform (plan, apply, drift) | |
-| Tagging, budget, and cost governance | |
-| Environment promotion (dev → staging → prod) | |
-| Resource import (manual and discovery) | |
-| Security and observability outputs | |
+| Terraform module design for this project | AWS service behaviour and usage patterns (see `ai/domains/aws.md`) |
+| State backends and remote state layout used here | Python or shell scripts that invoke Terraform |
+| Tagging, budget, and cost governance | Application code deployed onto the infrastructure |
+| Environment promotion (dev → staging → prod) | Data pipeline logic (see `ai/domains/data-product.md`) |
+| Observability outputs (log groups, retention) | Generic Terraform style, CI/CD, testing/mocks, import, or security theory — use the Terraform MCP/docs |
 
 ---
 
@@ -29,22 +29,17 @@ how infrastructure is written and managed — not what AWS services do (see `ai/
 
 | Skill | File | Description |
 |---|---|---|
-| Style conventions | `ai/skills/terraform/terraform_style.md` | Terraform code structure and style conventions |
 | Modules | `ai/skills/terraform/modules.md` | Reusable module patterns |
 | State management | `ai/skills/terraform/state_management.md` | State backends, overrides, and hygiene |
-| IAM least privilege | `ai/skills/terraform/iam_least_privilege.md` | IAM policies with least privilege principle |
-| Testing | `ai/skills/terraform/terraform_testing.md` | Testing patterns (unit, integration, assertions) |
-| Mocks | `ai/skills/terraform/terraform_mocks.md` | Mock providers for testing without AWS |
-| CI/CD | `ai/skills/terraform/terraform_ci_cd.md` | CI/CD patterns for validation and testing |
-| Refactoring | `ai/skills/terraform/terraform_refactoring.md` | Refactor Terraform into reusable modules |
-| Stacks | `ai/skills/terraform/terraform_stacks.md` | Multi-environment infrastructure with Terraform Stacks |
-| Orchestration | `ai/skills/terraform/terraform_orchestration.md` | Orchestrate execution using CI/CD and external tools |
-| Import (manual) | `ai/skills/terraform/terraform_import_manual.md` | Import existing resources manually |
-| Import (discovery) | `ai/skills/terraform/terraform_import_discovery.md` | Discover and bulk import resources |
-| Security | `ai/skills/terraform/terraform_security.md` | Security best practices for infrastructure |
 | Observability | `ai/skills/terraform/terraform_observability.md` | CloudWatch log groups, retention policies, mandatory outputs |
 | Governance | `ai/skills/terraform/terraform_governance.md` | Tagging enforcement, budget governance, cost awareness, drift management |
 | Environment promotion | `ai/skills/terraform/environment_promotion.md` | Directory-per-environment pattern, state isolation, immutable artifact promotion |
+
+For generic Terraform mechanics not tied to this project's own conventions
+(style/formatting, CI/CD pipeline shapes, mocks, stacks, resource import,
+security fundamentals, IAM least-privilege theory) — consult the Terraform
+MCP or official HashiCorp documentation directly rather than a local skill;
+this domain only keeps skills encoding project-specific decisions.
 
 ---
 

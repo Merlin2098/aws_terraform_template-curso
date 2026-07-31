@@ -206,6 +206,6 @@ output "log_group_arn" {
 
 - `ai/skills/aws/lambda_functions.md` — Lambda configuration and handler structure
 - `ai/skills/terraform/terraform_observability.md` — log group retention and tagging pattern
-- `ai/skills/terraform/iam_least_privilege.md` — Lambda execution role scoping
+- `ai/skills/aws/iam_policies.md` — Lambda execution role scoping
 - `ai/skills/aws/cognito_auth.md` — JWT authoriser setup
 - `ai/skills/frontend/react_vite_aws.md` — consuming the API endpoint from the frontend

@@ -172,5 +172,5 @@ resource "aws_s3_bucket_notification" "upload_trigger" {
 
 - `ai/skills/frontend/file_upload_ux.md` — browser-side upload implementation
 - `ai/skills/aws/s3_data_lake.md` — bucket structure and access patterns
-- `ai/skills/terraform/iam_least_privilege.md` — IAM scoping principles
+- `ai/skills/aws/iam_policies.md` — IAM scoping principles
 - `ai/skills/aws/sqs_patterns.md` — SQS trigger for the upload notification

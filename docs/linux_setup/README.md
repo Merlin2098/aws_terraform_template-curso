@@ -1,7 +1,7 @@
 # Linux Setup
 
-This guide prepares an Ubuntu-like Linux machine to use this template and to
-install it into another repository.
+This guide prepares an Ubuntu-like Linux machine, or Git Bash on Windows, to
+use this template and to install it into another repository.
 
 ## Prepare the Template Repository
 
@@ -19,17 +19,27 @@ By default, the setup installs:
 - the runtime dependencies from `requirements.txt`
 - the development dependencies from `requirements-dev.txt`
 
+> **Note:** on Windows, `python -m venv` always creates a `Scripts/` layout
+> (`.venv/Scripts/python.exe`), even when the command runs inside Git Bash —
+> the layout follows the OS/interpreter, not the shell. On Linux/macOS it
+> creates `.venv/bin/`. `scripts/python/setup_env.sh` and
+> `scripts/python/update_venv.sh` detect whichever layout is present, so the
+> same commands work unmodified on both. See
+> `docs/incidents/venv-layout-gitbash-windows.md` for the incident this
+> guarded against.
+
 Install pre-commit into the current repository environment:
 
 ```bash
-./.venv/bin/pre-commit install
-./.venv/bin/pre-commit --version
+./.venv/bin/pre-commit install    # Linux/macOS
+./.venv/Scripts/pre-commit.exe install    # Windows (Git Bash)
 ```
 
 To run all configured hooks manually:
 
 ```bash
-./.venv/bin/pre-commit run --all-files
+./.venv/bin/pre-commit run --all-files    # Linux/macOS
+./.venv/Scripts/pre-commit.exe run --all-files    # Windows (Git Bash)
 ```
 
 ## Refresh or Change the Environment

@@ -198,7 +198,7 @@ def test_log_contains_required_fields(caplog):
 
 ## See also
 
-- `ai/skills/aws/cloudwatch_logging.md` — CloudWatch log group setup in Terraform
+- `ai/skills/terraform/terraform_observability.md` — CloudWatch log group setup in Terraform
 - `ai/skills/terraform/terraform_observability.md` — log group retention and tagging
 - `ai/skills/python/python_testing_quality.md` — caplog usage in pytest
 - `ai/skills/python/error_handling_pipeline.md` — structured error payload fields

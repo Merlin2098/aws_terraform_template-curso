@@ -1,9 +1,14 @@
 # PowerShell JSON and YAML Handling
 
+> **Secondary to Bash.** In Bash, prefer `jq` (JSON) and `yq` (YAML) — see
+> `ai/skills/shell/cli_automation.md` for `terraform output -json` examples.
+> Use this skill only inside a script that must be PowerShell-native for
+> another reason (see `ai/domains/shell.md`).
+
 ## When to use
 
-- Reading or writing Terraform variable files, Kubernetes manifests, or CI/CD config
-- Parsing AWS CLI / `terraform output -json` responses
+- Reading or writing Terraform variable files, Kubernetes manifests, or CI/CD config from within a PowerShell-native script
+- Parsing AWS CLI / `terraform output -json` responses when the surrounding script is already PowerShell
 - Transforming configuration between formats (JSON ↔ YAML, JSON ↔ PSCustomObject)
 
 ---

@@ -4,7 +4,9 @@
 
 - Writing scripts that orchestrate CLI tools: `git`, `terraform`, `docker`, `aws`, `az`
 - Building DevOps automation scripts (deploy pipelines, CI steps, maintenance jobs)
-- Generating both PowerShell and Bash variants of CLI workflows
+- Default to Bash (Git Bash on Windows, native elsewhere) — the same script
+  runs unchanged across every environment. Generate a PowerShell variant only
+  when the user's environment requires it (see `ai/domains/shell.md`).
 
 For the *service-level behaviour* (what Lambda does, how S3 buckets work, IAM policy design), consult:
 - `ai/skills/aws/` — AWS service patterns
@@ -66,7 +68,7 @@ terraform -chdir="$CHDIR" plan    -input=false -out=tfplan
 echo "Review the plan above. Run: terraform -chdir=$CHDIR apply tfplan"
 ```
 
-PowerShell equivalent:
+PowerShell equivalent (only when the user's environment requires PowerShell):
 
 ```powershell
 $chdir = $env:TF_CHDIR ?? 'infra'
@@ -123,7 +125,7 @@ aws s3 cp "$LOCAL_FILE" "s3://$BUCKET/$KEY" \
     --expected-bucket-owner "$AWS_ACCOUNT"
 ```
 
-PowerShell equivalent:
+PowerShell equivalent (only when the user's environment requires PowerShell):
 
 ```powershell
 $account = (aws sts get-caller-identity | ConvertFrom-Json).Account

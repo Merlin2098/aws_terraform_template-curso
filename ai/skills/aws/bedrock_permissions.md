@@ -122,6 +122,6 @@ Read the region from `terraform output` — never hardcode it.
 
 ## See also
 
-- `ai/skills/terraform/iam_least_privilege.md` — IAM scoping principles
+- `ai/skills/aws/iam_policies.md` — IAM scoping principles
 - `ai/skills/python/bedrock_client.md` — invocation patterns and retry handling
 - `ai/skills/terraform/terraform_governance.md` — Bedrock cost alert setup

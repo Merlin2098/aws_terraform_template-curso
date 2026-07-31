@@ -39,7 +39,6 @@ It does not cover how to declare those services in Terraform — that belongs in
 | EventBridge | `ai/skills/aws/eventbridge.md` | Event-driven architecture using EventBridge |
 | API Gateway | `ai/skills/aws/api_gateway.md` | HTTP API vs REST API, Lambda proxy integration, CORS, throttling, Cognito authoriser |
 | CloudFront + S3 hosting | `ai/skills/aws/cloudfront_s3_hosting.md` | Static hosting with OAC, cache behavior split, SPA routing, cache invalidation |
-| CloudWatch logging | `ai/skills/aws/cloudwatch_logging.md` | Logging and monitoring with CloudWatch |
 | Glue jobs | `ai/skills/aws/glue_jobs.md` | AWS Glue job design patterns |
 | Glue Crawler + Data Catalog | `ai/skills/aws/glue_crawler_catalog.md` | Crawler config, catalog database/table, and triggers |
 | Lake Formation intro | `ai/skills/aws/lake_formation_intro.md` | Data-lake governance and the permissions model over the Glue Catalog |

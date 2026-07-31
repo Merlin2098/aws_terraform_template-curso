@@ -139,7 +139,6 @@ resource "aws_iam_policy" "read_data_lake" {
 
 ## See also
 
-- `ai/skills/terraform/terraform_style.md` — naming and formatting conventions within a module
 - `ai/skills/terraform/state_management.md` — how module state fits into the overall backend
 - `ai/skills/terraform/environment_promotion.md` — calling the same module across dev/staging/prod
 - `ai/skills/quality/simplicity.md` — the decision ladder that governs when to add module configurability

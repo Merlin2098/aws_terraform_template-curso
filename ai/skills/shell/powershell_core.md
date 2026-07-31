@@ -1,8 +1,15 @@
 # PowerShell Core Patterns
 
+> **Secondary to Bash.** This project defaults to Git Bash for maximum
+> cross-environment compatibility (see `ai/domains/shell.md`). Reach for
+> PowerShell only when the task is Windows-native administration
+> (`ai/skills/shell/powershell_windows_admin.md`) or the user explicitly
+> requires a `.ps1` script. Otherwise use `ai/skills/shell/bash_core.md`.
+
 ## When to use
 
-- Generating any PowerShell script (`.ps1`, module, function)
+- Generating a PowerShell script because the task genuinely requires one
+  (Windows Services/Registry/Scheduled Tasks, or explicit user request)
 - Reviewing or refactoring existing PowerShell code
 - Choosing between PowerShell approaches (cmdlet vs .NET vs COM)
 

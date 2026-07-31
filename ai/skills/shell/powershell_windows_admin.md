@@ -2,6 +2,12 @@
 
 Covers: Windows Services · Registry · Scheduled Tasks
 
+> **This is the primary legitimate reason to use PowerShell in this
+> project.** Git Bash is the default shell (see `ai/domains/shell.md`), but
+> it has no equivalent for Windows Services, the Registry, or Scheduled
+> Tasks — these APIs are Windows-native and PowerShell is the correct tool
+> here, not a fallback.
+
 ## When to use
 
 - Managing Windows services (start, stop, restart, query)

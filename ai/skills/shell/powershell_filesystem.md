@@ -1,9 +1,15 @@
 # PowerShell Filesystem Operations
 
+> **Secondary to Bash.** This project defaults to Git Bash for filesystem
+> scripting (see `ai/domains/shell.md` and `ai/skills/shell/bash_core.md`) —
+> `cp`/`mv`/`rm`/`tar` cover the same operations portably. Use this skill only
+> when the script must be PowerShell-native (paired with
+> `ai/skills/shell/powershell_windows_admin.md`, or an explicit user request).
+
 ## When to use
 
-- Generating scripts that copy, move, delete, rename, compress, or expand files/directories
-- Any destructive filesystem operation (delete, overwrite, compress-over-existing)
+- Generating a PowerShell script that copies, moves, deletes, renames, compresses, or expands files/directories — because PowerShell is genuinely required for this task
+- Any destructive filesystem operation (delete, overwrite, compress-over-existing) within that PowerShell script
 - Bulk file operations that need a dry-run mode before execution
 
 ## Key cmdlets

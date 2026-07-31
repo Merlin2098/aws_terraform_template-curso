@@ -54,17 +54,9 @@ iam_policies:
   path: ai/skills/aws/iam_policies.md
   description: IAM roles and least privilege policies
 
-cloudwatch_logging:
-  path: ai/skills/aws/cloudwatch_logging.md
-  description: Logging and monitoring with CloudWatch
-
 terraform_modules:
   path: ai/skills/terraform/modules.md
   description: Terraform reusable module patterns
-
-iam_least_privilege:
-  path: ai/skills/terraform/iam_least_privilege.md
-  description: IAM policies with least privilege principle
 
 etl_patterns:
   path: ai/skills/data/etl_patterns.md
@@ -97,46 +89,6 @@ rust_project_guidance:
 sql_workflow_guidance:
   path: ai/skills/sql/sql_workflow_guidance.md
   description: Maintainable SQL file organization and transformation workflow guidance
-
-terraform_testing:
-  path: ai/skills/terraform/terraform_testing.md
-  description: Terraform testing patterns (unit, integration, assertions)
-
-terraform_mocks:
-  path: ai/skills/terraform/terraform_mocks.md
-  description: Mock providers for Terraform testing without AWS
-
-terraform_ci_cd:
-  path: ai/skills/terraform/terraform_ci_cd.md
-  description: CI/CD patterns for Terraform validation and testing
-
-terraform_refactoring:
-  path: ai/skills/terraform/terraform_refactoring.md
-  description: Refactor Terraform into reusable modules
-
-terraform_stacks:
-  path: ai/skills/terraform/terraform_stacks.md
-  description: Manage multi-environment infrastructure with Terraform Stacks
-
-terraform_orchestration:
-  path: ai/skills/terraform/terraform_orchestration.md
-  description: Orchestrate Terraform execution using CI/CD and external tools
-
-terraform_import_manual:
-  path: ai/skills/terraform/terraform_import_manual.md
-  description: Import existing resources manually into Terraform
-
-terraform_import_discovery:
-  path: ai/skills/terraform/terraform_import_discovery.md
-  description: Discover and bulk import resources using Terraform Search
-
-terraform_security:
-  path: ai/skills/terraform/terraform_security.md
-  description: Security best practices for Terraform infrastructure
-
-terraform_style:
-  path: ai/skills/terraform/terraform_style.md
-  description: Terraform code structure and style conventions
 
 state_management:
   path: ai/skills/terraform/state_management.md

@@ -52,7 +52,6 @@ Managed cloud services: compute, storage, messaging, ML, security.
 | EventBridge | `ai/skills/aws/eventbridge.md` |
 | API Gateway | `ai/skills/aws/api_gateway.md` |
 | CloudFront + S3 hosting | `ai/skills/aws/cloudfront_s3_hosting.md` |
-| CloudWatch logging | `ai/skills/aws/cloudwatch_logging.md` |
 | Glue jobs | `ai/skills/aws/glue_jobs.md` |
 | Textract | `ai/skills/aws/textract.md` |
 | Bedrock permissions | `ai/skills/aws/bedrock_permissions.md` |
@@ -68,19 +67,8 @@ Infrastructure as code: modules, state, CI/CD, security, governance.
 
 | Skill | Path |
 |---|---|
-| Style conventions | `ai/skills/terraform/terraform_style.md` |
 | Modules | `ai/skills/terraform/modules.md` |
 | State management | `ai/skills/terraform/state_management.md` |
-| IAM least privilege | `ai/skills/terraform/iam_least_privilege.md` |
-| Testing | `ai/skills/terraform/terraform_testing.md` |
-| Mocks | `ai/skills/terraform/terraform_mocks.md` |
-| CI/CD | `ai/skills/terraform/terraform_ci_cd.md` |
-| Refactoring | `ai/skills/terraform/terraform_refactoring.md` |
-| Stacks | `ai/skills/terraform/terraform_stacks.md` |
-| Orchestration | `ai/skills/terraform/terraform_orchestration.md` |
-| Import (manual) | `ai/skills/terraform/terraform_import_manual.md` |
-| Import (discovery) | `ai/skills/terraform/terraform_import_discovery.md` |
-| Security | `ai/skills/terraform/terraform_security.md` |
 | Observability | `ai/skills/terraform/terraform_observability.md` |
 | Governance | `ai/skills/terraform/terraform_governance.md` |
 | Environment promotion | `ai/skills/terraform/environment_promotion.md` |
@@ -155,12 +143,12 @@ Linux, WSL, and Git Bash environments.
 | Skill | Path |
 |---|---|
 | Environment detection | `ai/skills/shell/environment_detection.md` |
-| PowerShell core | `ai/skills/shell/powershell_core.md` |
-| PowerShell filesystem | `ai/skills/shell/powershell_filesystem.md` |
-| PowerShell Windows admin (services, registry, scheduled tasks) | `ai/skills/shell/powershell_windows_admin.md` |
-| PowerShell JSON/YAML | `ai/skills/shell/powershell_json_yaml.md` |
-| Bash core | `ai/skills/shell/bash_core.md` |
+| Bash core (default shell) | `ai/skills/shell/bash_core.md` |
 | CLI automation (git, terraform, docker, aws, az) | `ai/skills/shell/cli_automation.md` |
+| PowerShell Windows admin (services, registry, scheduled tasks — the one Bash can't reach) | `ai/skills/shell/powershell_windows_admin.md` |
+| PowerShell core (only when PowerShell is required) | `ai/skills/shell/powershell_core.md` |
+| PowerShell filesystem (only when PowerShell is required) | `ai/skills/shell/powershell_filesystem.md` |
+| PowerShell JSON/YAML (only when PowerShell is required) | `ai/skills/shell/powershell_json_yaml.md` |
 | Script security | `ai/skills/shell/script_security.md` |
 | Script quality (testing, documentation, refactoring) | `ai/skills/shell/script_quality.md` |
 

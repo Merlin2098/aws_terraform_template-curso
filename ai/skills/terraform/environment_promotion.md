@@ -163,6 +163,5 @@ module interface change that was not coordinated.
 ## See also
 
 - `ai/skills/terraform/state_management.md` — S3 backend and state file hygiene
-- `ai/skills/terraform/terraform_stacks.md` — alternative for complex multi-region deployments
 - `ai/skills/terraform/modules.md` — module structure and interface design
 - `ai/skills/terraform/terraform_governance.md` — per-environment budget and tagging requirements
