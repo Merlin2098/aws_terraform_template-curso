@@ -44,7 +44,7 @@ Use the decision tree below (R1 wins over R2, R2 over R3, etc.). Stop at the fir
 **Native binaries cross-cutting rule:** any artifact with native binaries must be built on Linux — via `public.ecr.aws/sam/build-python3.x` or `pip install --platform manylinux2014_x86_64 --only-binary=:all: --target`. The Windows host never produces the final artifact for native dependencies.
 
 See [`ai/skills/aws/lambda_packaging.md`](lambda_packaging.md) for full ECR patterns, Dockerfile, and build script.
-See [`docs/adr/0002-lambda-packaging-strategy.md`](../../../docs/adr/0002-lambda-packaging-strategy.md) for the rationale.
+See [`docs/internal/adr/0002-lambda-packaging-strategy.md`](../../../docs/internal/adr/0002-lambda-packaging-strategy.md) for the rationale.
 
 ## Avoid
 

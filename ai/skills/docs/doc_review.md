@@ -10,7 +10,7 @@
 
 - **Accuracy vs. the code** — verify commands, file paths, and config keys against current source; stale docs are worse than no docs
 - **Executable examples** — prefer commands a reader can copy and run without mental translation; flag pseudocode presented as real commands
-- **Platform alignment** — this repo targets Windows + Make; confirm `docs/windows_setup/` content and PowerShell paths are consistent with current scripts and `make` targets
+- **Platform alignment** — this repo targets Windows + Make; confirm `docs/student/` and `docs/framework/` content and PowerShell paths are consistent with current scripts and `make` targets
 - **Broken or relative links** — check that file references and cross-doc links resolve from the repo root
 - **Audience fit** — consider who will read it (contributor, operator, new engineer) and whether the level of detail matches
 - **Terminology consistency** — prefer the terms already used elsewhere in the repo rather than introducing new synonyms

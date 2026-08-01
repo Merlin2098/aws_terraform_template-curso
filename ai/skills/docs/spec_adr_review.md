@@ -3,7 +3,7 @@
 ## When to use
 
 - Reviewing or authoring a spec under `specs/project/`
-- Reviewing or authoring an ADR under `docs/adr/`
+- Reviewing or authoring an ADR under `docs/internal/adr/`
 - Checking whether a spec or ADR is complete enough to act on
 
 ## Spec review

@@ -75,10 +75,16 @@ terraform -chdir=infra init
 terraform -chdir=infra plan
 ```
 
-All commands run from Git Bash. For setup details, see `docs/linux_setup/`.
+All commands run from Git Bash. For Windows setup details, see
+[`docs/student/01_setup_windows.md`](docs/student/01_setup_windows.md).
 
 For Terraform design guardrails used by this template and intended host
-repositories, see `docs/terra_principles.md`.
+repositories, see
+[`docs/student/06_terraform_principles.md`](docs/student/06_terraform_principles.md).
+
+**Taking the course?** Start at
+[`docs/student/README.md`](docs/student/README.md) — it links every setup and
+reference doc in the order you'll actually use them.
 
 ## Installation Model
 
@@ -120,7 +126,8 @@ Git Bash support includes setup and maintenance helpers under `scripts/python/`:
 
 Detailed setup and day-to-day command references live in:
 
-* `docs/linux_setup/README.md`
+* `docs/framework/README.md` — installing/updating this template into a host repo
+* `docs/student/README.md` — course setup and daily command references
 
 ## AI Guidance Files
 

@@ -98,7 +98,7 @@ no está corriendo — confirmar con `docker info` y reintentar.
 
 - Instalar ambos MCP en **Sesión 1** (fundamentos y preparación del entorno),
   junto con la configuración de AWS CLI — ver
-  `ai/skills/aws/aws_cli.md` y `docs/education/temario_aws_v2.md`.
+  `ai/skills/aws/aws_cli.md` y `docs/student/03_temario.md`.
 - A partir de **Sesión 2** (Terraform), el MCP de Terraform reemplaza la
   necesidad de una skill local de estilo/sintaxis genérica: usar el MCP para
   dudas de sintaxis, argumentos de recursos, diseño de módulos, o versiones

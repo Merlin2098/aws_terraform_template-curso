@@ -23,7 +23,7 @@ Before implementing a significant feature or architectural change, a spec is des
 
 **Level:** Required
 
-Any decision that changes the overall architecture (adding a new service, replacing a technology, changing a data contract) must be recorded in an ADR under `docs/adr/` before implementation begins.
+Any decision that changes the overall architecture (adding a new service, replacing a technology, changing a data contract) must be recorded in an ADR under `docs/internal/adr/` before implementation begins.
 
 **Format:** Use the standard ADR template — title, status, context, decision, consequences.
 
