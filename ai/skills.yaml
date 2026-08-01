@@ -54,10 +54,6 @@ iam_policies:
   path: ai/skills/aws/iam_policies.md
   description: IAM roles and least privilege policies
 
-terraform_modules:
-  path: ai/skills/terraform/modules.md
-  description: Terraform reusable module patterns
-
 etl_patterns:
   path: ai/skills/data/etl_patterns.md
   description: ETL pipeline Bronze/Silver/Gold layers, transformations, and OCR normalisation stage with prompt versioning
@@ -105,10 +101,6 @@ terraform_observability:
 terraform_governance:
   path: ai/skills/terraform/terraform_governance.md
   description: Tagging enforcement, budget governance, per-service cost awareness, drift management, and versioning policy
-
-environment_promotion:
-  path: ai/skills/terraform/environment_promotion.md
-  description: Directory-per-environment promotion pattern, state isolation, and immutable artifact promotion
 
 bedrock_permissions:
   path: ai/skills/aws/bedrock_permissions.md

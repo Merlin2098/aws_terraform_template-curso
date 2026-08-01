@@ -67,11 +67,9 @@ Infrastructure as code: modules, state, CI/CD, security, governance.
 
 | Skill | Path |
 |---|---|
-| Modules | `ai/skills/terraform/modules.md` |
 | State management | `ai/skills/terraform/state_management.md` |
 | Observability | `ai/skills/terraform/terraform_observability.md` |
 | Governance | `ai/skills/terraform/terraform_governance.md` |
-| Environment promotion | `ai/skills/terraform/environment_promotion.md` |
 
 ---
 

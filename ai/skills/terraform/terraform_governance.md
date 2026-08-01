@@ -194,7 +194,7 @@ This matches the two-notification pattern already defined in the `aws_budgets_bu
 For per-service cost detail, see:
 - `ai/skills/aws/textract.md` — page count logging
 - `ai/skills/python/bedrock_client.md` — token guard and throttle handling
-- `ai/skills/terraform/terraform_governance.md` (this file) — budget resource definition
+- `ai/skills/terraform/terraform_observability.md` — mandatory outputs and log group naming that consume `local.common_tags`
 
 ---
 

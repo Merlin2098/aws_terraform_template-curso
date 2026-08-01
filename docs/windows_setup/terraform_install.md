@@ -1,229 +1,328 @@
-# Install Terraform on Windows
+# Instalar Terraform en Windows
 
-Use this guide when you need a clear Windows setup path for:
+Usa esta guía cuando necesites una ruta clara de configuración en Windows
+para:
 
-* Terraform installation using the official HashiCorp binary
-* Manual `PATH` configuration
-* Corporate/restricted environment compatibility
-* Initial Terraform + AWS CLI validation workflow
+* Instalación de Terraform usando el binario oficial de HashiCorp
+* Configuración manual del `PATH`
+* Compatibilidad con entornos corporativos/restringidos
+* Flujo inicial de validación de Terraform + AWS CLI
 
-This guide intentionally avoids package managers such as Chocolatey to keep the
-
-installation process explicit, portable, and reproducible.
-
----
-
-# 1. Download Terraform From the Official HashiCorp Website
-
-Open the official Terraform download page:
-
-[Terraform Downloads](https://developer.hashicorp.com/terraform/downloads?utm_source=chatgpt.com)
-
-Download:
-
-* Windows AMD64 ZIP package
-
-Example:
-
-<pre class="overflow-visible! px-0!" data-start="1419" data-end="1464"><div class="relative w-full mt-4 mb-1"><div class=""><div class="relative"><div class="h-full min-h-0 min-w-0"><div class="h-full min-h-0 min-w-0"><div class="border border-token-border-light border-radius-3xl corner-superellipse/1.1 rounded-3xl"><div class="h-full w-full border-radius-3xl bg-token-bg-elevated-secondary corner-superellipse/1.1 overflow-clip rounded-3xl lxnfua_clipPathFallback"><div class="pointer-events-none absolute end-1.5 top-1 z-2 md:end-2 md:top-1"></div><div class="relative"><div class="pe-11 pt-3"><div class="relative z-0 flex max-w-full"><div id="code-block-viewer" dir="ltr" class="q9tKkq_viewer cm-editor z-10 light:cm-light dark:cm-light flex h-full w-full flex-col items-stretch ͼs ͼ16"><div class="cm-scroller"><pre class="cm-content q9tKkq_readonly m-0"><code><span>terraform_1.x.x_windows_amd64.zip</span></code></pre></div></div></div></div></div></div></div></div></div><div class=""><div class=""></div></div></div></div></div></pre>
+Esta guía evita intencionalmente gestores de paquetes como Chocolatey, para
+mantener el proceso de instalación explícito, portable y reproducible.
 
 ---
 
-# 2. Extract Terraform
+## 1. Descargar Terraform desde el sitio oficial de HashiCorp
 
-Create a local tools directory.
+Abre la página oficial de descargas de Terraform:
 
-Recommended example:
+[Terraform Downloads](https://developer.hashicorp.com/terraform/downloads)
 
-<pre class="overflow-visible! px-0!" data-start="1550" data-end="1590"><div class="relative w-full mt-4 mb-1"><div class=""><div class="relative"><div class="h-full min-h-0 min-w-0"><div class="h-full min-h-0 min-w-0"><div class="border border-token-border-light border-radius-3xl corner-superellipse/1.1 rounded-3xl"><div class="h-full w-full border-radius-3xl bg-token-bg-elevated-secondary corner-superellipse/1.1 overflow-clip rounded-3xl lxnfua_clipPathFallback"><div class="pointer-events-none absolute end-1.5 top-1 z-2 md:end-2 md:top-1"></div><div class="relative"><div class="pe-11 pt-3"><div class="relative z-0 flex max-w-full"><div id="code-block-viewer" dir="ltr" class="q9tKkq_viewer cm-editor z-10 light:cm-light dark:cm-light flex h-full w-full flex-col items-stretch ͼs ͼ16"><div class="cm-scroller"><pre class="cm-content q9tKkq_readonly m-0"><code><span>C:\approved-tools\terraform\</span></code></pre></div></div></div></div></div></div></div></div></div><div class=""><div class=""></div></div></div></div></div></pre>
+Descarga:
 
-Extract the ZIP contents into that folder.
+* El paquete ZIP de Windows AMD64
 
-Expected structure:
+Ejemplo:
 
-<pre class="overflow-visible! px-0!" data-start="1657" data-end="1710"><div class="relative w-full mt-4 mb-1"><div class=""><div class="relative"><div class="h-full min-h-0 min-w-0"><div class="h-full min-h-0 min-w-0"><div class="border border-token-border-light border-radius-3xl corner-superellipse/1.1 rounded-3xl"><div class="h-full w-full border-radius-3xl bg-token-bg-elevated-secondary corner-superellipse/1.1 overflow-clip rounded-3xl lxnfua_clipPathFallback"><div class="pointer-events-none absolute end-1.5 top-1 z-2 md:end-2 md:top-1"></div><div class="relative"><div class="pe-11 pt-3"><div class="relative z-0 flex max-w-full"><div id="code-block-viewer" dir="ltr" class="q9tKkq_viewer cm-editor z-10 light:cm-light dark:cm-light flex h-full w-full flex-col items-stretch ͼs ͼ16"><div class="cm-scroller"><pre class="cm-content q9tKkq_readonly m-0"><code><span>C:\approved-tools\terraform\terraform.exe</span></code></pre></div></div></div></div></div></div></div></div></div><div class=""><div class=""></div></div></div></div></div></pre>
-
----
-
-# 3. Verify Terraform Binary Directly
-
-Open PowerShell and run:
-
-<pre class="overflow-visible! px-0!" data-start="1782" data-end="1849"><div class="relative w-full mt-4 mb-1"><div class=""><div class="relative"><div class="h-full min-h-0 min-w-0"><div class="h-full min-h-0 min-w-0"><div class="border border-token-border-light border-radius-3xl corner-superellipse/1.1 rounded-3xl"><div class="h-full w-full border-radius-3xl bg-token-bg-elevated-secondary corner-superellipse/1.1 overflow-clip rounded-3xl lxnfua_clipPathFallback"><div class="pointer-events-none absolute inset-x-4 top-12 bottom-4"><div class="pointer-events-none sticky z-40 shrink-0 z-1!"><div class="sticky bg-token-border-light"></div></div></div><div class="relative"><div class=""><div class="relative z-0 flex max-w-full"><div id="code-block-viewer" dir="ltr" class="q9tKkq_viewer cm-editor z-10 light:cm-light dark:cm-light flex h-full w-full flex-col items-stretch ͼs ͼ16"><div class="cm-scroller"><pre class="cm-content q9tKkq_readonly m-0"><code><span class="ͼ10">C:</span><span>\</span><span class="ͼ11">approved-tools</span><span>\</span><span class="ͼ11">terraform</span><span>\</span><span class="ͼ11">terraform</span><span>.</span><span class="ͼ11">exe</span><span></span><span class="ͼ11">version</span></code></pre></div></div></div></div></div></div></div></div></div><div class=""><div class=""></div></div></div></div></div></pre>
-
-Expected output:
-
-<pre class="overflow-visible! px-0!" data-start="1869" data-end="1897"><div class="relative w-full mt-4 mb-1"><div class=""><div class="relative"><div class="h-full min-h-0 min-w-0"><div class="h-full min-h-0 min-w-0"><div class="border border-token-border-light border-radius-3xl corner-superellipse/1.1 rounded-3xl"><div class="h-full w-full border-radius-3xl bg-token-bg-elevated-secondary corner-superellipse/1.1 overflow-clip rounded-3xl lxnfua_clipPathFallback"><div class="pointer-events-none absolute end-1.5 top-1 z-2 md:end-2 md:top-1"></div><div class="relative"><div class="pe-11 pt-3"><div class="relative z-0 flex max-w-full"><div id="code-block-viewer" dir="ltr" class="q9tKkq_viewer cm-editor z-10 light:cm-light dark:cm-light flex h-full w-full flex-col items-stretch ͼs ͼ16"><div class="cm-scroller"><pre class="cm-content q9tKkq_readonly m-0"><code><span>Terraform v1.x.x</span></code></pre></div></div></div></div></div></div></div></div></div><div class=""><div class=""></div></div></div></div></div></pre>
+```text
+terraform_1.x.x_windows_amd64.zip
+```
 
 ---
 
-# 4. Add Terraform to PATH (Current Session Only)
+## 2. Extraer Terraform
 
-Use this when you want temporary access without modifying the machine
+Crea un directorio local para herramientas.
 
-configuration.
+Ejemplo recomendado:
 
-<pre class="overflow-visible! px-0!" data-start="2041" data-end="2151"><div class="relative w-full mt-4 mb-1"><div class=""><div class="relative"><div class="h-full min-h-0 min-w-0"><div class="h-full min-h-0 min-w-0"><div class="border border-token-border-light border-radius-3xl corner-superellipse/1.1 rounded-3xl"><div class="h-full w-full border-radius-3xl bg-token-bg-elevated-secondary corner-superellipse/1.1 overflow-clip rounded-3xl lxnfua_clipPathFallback"><div class="pointer-events-none absolute inset-x-4 top-12 bottom-4"><div class="pointer-events-none sticky z-40 shrink-0 z-1!"><div class="sticky bg-token-border-light"></div></div></div><div class="relative"><div class=""><div class="relative z-0 flex max-w-full"><div id="code-block-viewer" dir="ltr" class="q9tKkq_viewer cm-editor z-10 light:cm-light dark:cm-light flex h-full w-full flex-col items-stretch ͼs ͼ16"><div class="cm-scroller"><pre class="cm-content q9tKkq_readonly m-0"><code><span class="ͼ11">$env:Path</span><span></span><span class="ͼv">=</span><span></span><span class="ͼz">"C:\approved-tools\terraform;</span><span class="ͼ11">$env:Path</span><span class="ͼz">"</span><br/><br/><span class="ͼ11">terraform</span><span></span><span class="ͼ11">version</span><br/><span class="ͼ10">Get-Command</span><span></span><span class="ͼ11">terraform</span></code></pre></div></div></div></div></div></div></div></div></div><div class=""><div class=""></div></div></div></div></div></pre>
+```text
+C:\approved-tools\terraform\
+```
 
-This only affects the current PowerShell session.
+Extrae el contenido del ZIP en esa carpeta.
 
----
+Estructura esperada:
 
-# 5. Add Terraform to User PATH Permanently (No Admin Rights)
-
-Use this when administrator rights are unavailable.
-
-<pre class="overflow-visible! px-0!" data-start="2325" data-end="2575"><div class="relative w-full mt-4 mb-1"><div class=""><div class="relative"><div class="h-full min-h-0 min-w-0"><div class="h-full min-h-0 min-w-0"><div class="border border-token-border-light border-radius-3xl corner-superellipse/1.1 rounded-3xl"><div class="h-full w-full border-radius-3xl bg-token-bg-elevated-secondary corner-superellipse/1.1 overflow-clip rounded-3xl lxnfua_clipPathFallback"><div class="pointer-events-none absolute inset-x-4 top-12 bottom-4"><div class="pointer-events-none sticky z-40 shrink-0 z-1!"><div class="sticky bg-token-border-light"></div></div></div><div class="relative"><div class=""><div class="relative z-0 flex max-w-full"><div id="code-block-viewer" dir="ltr" class="q9tKkq_viewer cm-editor z-10 light:cm-light dark:cm-light flex h-full w-full flex-col items-stretch ͼs ͼ16"><div class="cm-scroller"><pre class="cm-content q9tKkq_readonly m-0"><code><span class="ͼ11">$userPath</span><span></span><span class="ͼv">=</span><span> [</span><span class="ͼ11">System</span><span>.</span><span class="ͼ11">Environment</span><span>]</span><span class="ͼv">::</span><span class="ͼ11">GetEnvironmentVariable</span><span>(</span><span class="ͼz">"Path"</span><span>, </span><span class="ͼz">"User"</span><span>)</span><br/><br/><span>[</span><span class="ͼ11">System</span><span>.</span><span class="ͼ11">Environment</span><span>]</span><span class="ͼv">::</span><span class="ͼ11">SetEnvironmentVariable</span><span>(</span><br/><span></span><span class="ͼz">"Path"</span><span>,</span><br/><span></span><span class="ͼz">"</span><span class="ͼ11">$userPath</span><span class="ͼz">;C:\approved-tools\terraform"</span><span>,</span><br/><span></span><span class="ͼz">"User"</span><br/><span>)</span><br/><br/><span class="ͼ10">Write-Host</span><span></span><span class="ͼz">"Terraform added to user PATH"</span></code></pre></div></div></div></div></div></div></div></div></div><div class=""><div class=""></div></div></div></div></div></pre>
-
-Close and reopen PowerShell, then verify:
-
-<pre class="overflow-visible! px-0!" data-start="2620" data-end="2677"><div class="relative w-full mt-4 mb-1"><div class=""><div class="relative"><div class="h-full min-h-0 min-w-0"><div class="h-full min-h-0 min-w-0"><div class="border border-token-border-light border-radius-3xl corner-superellipse/1.1 rounded-3xl"><div class="h-full w-full border-radius-3xl bg-token-bg-elevated-secondary corner-superellipse/1.1 overflow-clip rounded-3xl lxnfua_clipPathFallback"><div class="pointer-events-none absolute inset-x-4 top-12 bottom-4"><div class="pointer-events-none sticky z-40 shrink-0 z-1!"><div class="sticky bg-token-border-light"></div></div></div><div class="relative"><div class=""><div class="relative z-0 flex max-w-full"><div id="code-block-viewer" dir="ltr" class="q9tKkq_viewer cm-editor z-10 light:cm-light dark:cm-light flex h-full w-full flex-col items-stretch ͼs ͼ16"><div class="cm-scroller"><pre class="cm-content q9tKkq_readonly m-0"><code><span class="ͼ11">terraform</span><span></span><span class="ͼ11">version</span><br/><span class="ͼ10">Get-Command</span><span></span><span class="ͼ11">terraform</span></code></pre></div></div></div></div></div></div></div></div></div><div class=""><div class=""></div></div></div></div></div></pre>
-
-This persists Terraform access for the current user profile only.
+```text
+C:\approved-tools\terraform\terraform.exe
+```
 
 ---
 
-# 6. Add Terraform to System PATH Permanently (Admin)
+## 3. Verificar el binario de Terraform directamente
 
-Use this when you manage the machine and want Terraform available system-wide.
+Abre PowerShell y ejecuta:
 
-Open PowerShell as Administrator:
+```powershell
+C:\approved-tools\terraform\terraform.exe version
+```
 
-<pre class="overflow-visible! px-0!" data-start="2921" data-end="3194"><div class="relative w-full mt-4 mb-1"><div class=""><div class="relative"><div class="h-full min-h-0 min-w-0"><div class="h-full min-h-0 min-w-0"><div class="border border-token-border-light border-radius-3xl corner-superellipse/1.1 rounded-3xl"><div class="h-full w-full border-radius-3xl bg-token-bg-elevated-secondary corner-superellipse/1.1 overflow-clip rounded-3xl lxnfua_clipPathFallback"><div class="pointer-events-none absolute inset-x-4 top-12 bottom-4"><div class="pointer-events-none sticky z-40 shrink-0 z-1!"><div class="sticky bg-token-border-light"></div></div></div><div class="relative"><div class=""><div class="relative z-0 flex max-w-full"><div id="code-block-viewer" dir="ltr" class="q9tKkq_viewer cm-editor z-10 light:cm-light dark:cm-light flex h-full w-full flex-col items-stretch ͼs ͼ16"><div class="cm-scroller"><pre class="cm-content q9tKkq_readonly m-0"><code><span class="ͼ11">$terraformPath</span><span></span><span class="ͼv">=</span><span></span><span class="ͼz">"C:\approved-tools\terraform"</span><br/><br/><span>[</span><span class="ͼ11">System</span><span>.</span><span class="ͼ11">Environment</span><span>]</span><span class="ͼv">::</span><span class="ͼ11">SetEnvironmentVariable</span><span>(</span><br/><span></span><span class="ͼz">"Path"</span><span>,</span><br/><span>    [</span><span class="ͼ11">System</span><span>.</span><span class="ͼ11">Environment</span><span>]</span><span class="ͼv">::</span><span class="ͼ11">GetEnvironmentVariable</span><span>(</span><span class="ͼz">"Path"</span><span>, </span><span class="ͼz">"Machine"</span><span>) </span><span class="ͼv">+</span><span></span><span class="ͼz">";</span><span class="ͼ11">$terraformPath</span><span class="ͼz">"</span><span>,</span><br/><span></span><span class="ͼz">"Machine"</span><br/><span>)</span><br/><br/><span class="ͼ10">Write-Host</span><span></span><span class="ͼz">"Terraform added to system PATH"</span></code></pre></div></div></div></div></div></div></div></div></div><div class=""><div class=""></div></div></div></div></div></pre>
+Salida esperada:
 
-Close and reopen PowerShell, then verify:
-
-<pre class="overflow-visible! px-0!" data-start="3239" data-end="3296"><div class="relative w-full mt-4 mb-1"><div class=""><div class="relative"><div class="h-full min-h-0 min-w-0"><div class="h-full min-h-0 min-w-0"><div class="border border-token-border-light border-radius-3xl corner-superellipse/1.1 rounded-3xl"><div class="h-full w-full border-radius-3xl bg-token-bg-elevated-secondary corner-superellipse/1.1 overflow-clip rounded-3xl lxnfua_clipPathFallback"><div class="pointer-events-none absolute inset-x-4 top-12 bottom-4"><div class="pointer-events-none sticky z-40 shrink-0 z-1!"><div class="sticky bg-token-border-light"></div></div></div><div class="relative"><div class=""><div class="relative z-0 flex max-w-full"><div id="code-block-viewer" dir="ltr" class="q9tKkq_viewer cm-editor z-10 light:cm-light dark:cm-light flex h-full w-full flex-col items-stretch ͼs ͼ16"><div class="cm-scroller"><pre class="cm-content q9tKkq_readonly m-0"><code><span class="ͼ11">terraform</span><span></span><span class="ͼ11">version</span><br/><span class="ͼ10">Get-Command</span><span></span><span class="ͼ11">terraform</span></code></pre></div></div></div></div></div></div></div></div></div><div class=""><div class=""></div></div></div></div></div></pre>
-
----
-
-# 7. Install AWS CLI
-
-Terraform commonly interacts with AWS services, so AWS CLI should also be
-
-installed and validated.
-
-Download:
-
-[AWS CLI Installer](https://aws.amazon.com/cli/?utm_source=chatgpt.com)
-
-Verify installation:
-
-<pre class="overflow-visible! px-0!" data-start="3531" data-end="3578"><div class="relative w-full mt-4 mb-1"><div class=""><div class="relative"><div class="h-full min-h-0 min-w-0"><div class="h-full min-h-0 min-w-0"><div class="border border-token-border-light border-radius-3xl corner-superellipse/1.1 rounded-3xl"><div class="h-full w-full border-radius-3xl bg-token-bg-elevated-secondary corner-superellipse/1.1 overflow-clip rounded-3xl lxnfua_clipPathFallback"><div class="pointer-events-none absolute inset-x-4 top-12 bottom-4"><div class="pointer-events-none sticky z-40 shrink-0 z-1!"><div class="sticky bg-token-border-light"></div></div></div><div class="relative"><div class=""><div class="relative z-0 flex max-w-full"><div id="code-block-viewer" dir="ltr" class="q9tKkq_viewer cm-editor z-10 light:cm-light dark:cm-light flex h-full w-full flex-col items-stretch ͼs ͼ16"><div class="cm-scroller"><pre class="cm-content q9tKkq_readonly m-0"><code><span class="ͼ11">aws</span><span></span><span class="ͼv">--</span><span class="ͼ11">version</span><br/><span class="ͼ10">Get-Command</span><span></span><span class="ͼ11">aws</span></code></pre></div></div></div></div></div></div></div></div></div><div class=""><div class=""></div></div></div></div></div></pre>
+```text
+Terraform v1.x.x
+```
 
 ---
 
-# 8. Configure AWS Credentials
+## 4. Agregar Terraform al PATH (solo sesión actual)
 
-## Option A: Standard AWS Configure
+Usa esto cuando quieras acceso temporal sin modificar la configuración de la
+máquina.
 
-Run:
+```powershell
+$env:Path = "C:\approved-tools\terraform;$env:Path"
 
-<pre class="overflow-visible! px-0!" data-start="3660" data-end="3691"><div class="relative w-full mt-4 mb-1"><div class=""><div class="relative"><div class="h-full min-h-0 min-w-0"><div class="h-full min-h-0 min-w-0"><div class="border border-token-border-light border-radius-3xl corner-superellipse/1.1 rounded-3xl"><div class="h-full w-full border-radius-3xl bg-token-bg-elevated-secondary corner-superellipse/1.1 overflow-clip rounded-3xl lxnfua_clipPathFallback"><div class="pointer-events-none absolute inset-x-4 top-12 bottom-4"><div class="pointer-events-none sticky z-40 shrink-0 z-1!"><div class="sticky bg-token-border-light"></div></div></div><div class="relative"><div class=""><div class="relative z-0 flex max-w-full"><div id="code-block-viewer" dir="ltr" class="q9tKkq_viewer cm-editor z-10 light:cm-light dark:cm-light flex h-full w-full flex-col items-stretch ͼs ͼ16"><div class="cm-scroller"><pre class="cm-content q9tKkq_readonly m-0"><code><span class="ͼ11">aws</span><span></span><span class="ͼ11">configure</span></code></pre></div></div></div></div></div></div></div></div></div><div class=""><div class=""></div></div></div></div></div></pre>
+terraform version
+Get-Command terraform
+```
 
-Provide:
-
-<pre class="overflow-visible! px-0!" data-start="3703" data-end="3791"><div class="relative w-full mt-4 mb-1"><div class=""><div class="relative"><div class="h-full min-h-0 min-w-0"><div class="h-full min-h-0 min-w-0"><div class="border border-token-border-light border-radius-3xl corner-superellipse/1.1 rounded-3xl"><div class="h-full w-full border-radius-3xl bg-token-bg-elevated-secondary corner-superellipse/1.1 overflow-clip rounded-3xl lxnfua_clipPathFallback"><div class="pointer-events-none absolute end-1.5 top-1 z-2 md:end-2 md:top-1"></div><div class="relative"><div class="pe-11 pt-3"><div class="relative z-0 flex max-w-full"><div id="code-block-viewer" dir="ltr" class="q9tKkq_viewer cm-editor z-10 light:cm-light dark:cm-light flex h-full w-full flex-col items-stretch ͼs ͼ16"><div class="cm-scroller"><pre class="cm-content q9tKkq_readonly m-0"><code><span>AWS Access Key ID</span><br/><span>AWS Secret Access Key</span><br/><span>Default region</span><br/><span>Default output format</span></code></pre></div></div></div></div></div></div></div></div></div><div class=""><div class=""></div></div></div></div></div></pre>
-
-This creates:
-
-<pre class="overflow-visible! px-0!" data-start="3808" data-end="3880"><div class="relative w-full mt-4 mb-1"><div class=""><div class="relative"><div class="h-full min-h-0 min-w-0"><div class="h-full min-h-0 min-w-0"><div class="border border-token-border-light border-radius-3xl corner-superellipse/1.1 rounded-3xl"><div class="h-full w-full border-radius-3xl bg-token-bg-elevated-secondary corner-superellipse/1.1 overflow-clip rounded-3xl lxnfua_clipPathFallback"><div class="pointer-events-none absolute end-1.5 top-1 z-2 md:end-2 md:top-1"></div><div class="relative"><div class="pe-11 pt-3"><div class="relative z-0 flex max-w-full"><div id="code-block-viewer" dir="ltr" class="q9tKkq_viewer cm-editor z-10 light:cm-light dark:cm-light flex h-full w-full flex-col items-stretch ͼs ͼ16"><div class="cm-scroller"><pre class="cm-content q9tKkq_readonly m-0"><code><span>C:\Users\<USER>\.aws\credentials</span><br/><span>C:\Users\<USER>\.aws\config</span></code></pre></div></div></div></div></div></div></div></div></div><div class=""><div class=""></div></div></div></div></div></pre>
+Esto solo afecta a la sesión actual de PowerShell.
 
 ---
 
-## Option B: Environment Variables (.env.credentials)
+## 5. Agregar Terraform al PATH de usuario de forma permanente (sin derechos de administrador)
 
-Example:
+Usa esto cuando no tengas derechos de administrador disponibles.
 
-<pre class="overflow-visible! px-0!" data-start="3952" data-end="4050"><div class="relative w-full mt-4 mb-1"><div class=""><div class="relative"><div class="h-full min-h-0 min-w-0"><div class="h-full min-h-0 min-w-0"><div class="border border-token-border-light border-radius-3xl corner-superellipse/1.1 rounded-3xl"><div class="h-full w-full border-radius-3xl bg-token-bg-elevated-secondary corner-superellipse/1.1 overflow-clip rounded-3xl lxnfua_clipPathFallback"><div class="pointer-events-none absolute end-1.5 top-1 z-2 md:end-2 md:top-1"></div><div class="relative"><div class="pe-11 pt-3"><div class="relative z-0 flex max-w-full"><div id="code-block-viewer" dir="ltr" class="q9tKkq_viewer cm-editor z-10 light:cm-light dark:cm-light flex h-full w-full flex-col items-stretch ͼs ͼ16"><div class="cm-scroller"><pre class="cm-content q9tKkq_readonly m-0"><code><span>AWS_ACCESS_KEY_ID=XXXXXXXX</span><br/><span>AWS_SECRET_ACCESS_KEY=XXXXXXXX</span><br/><span>AWS_DEFAULT_REGION=us-east-1</span></code></pre></div></div></div></div></div></div></div></div></div><div class=""><div class=""></div></div></div></div></div></pre>
+```powershell
+$userPath = [System.Environment]::GetEnvironmentVariable("Path", "User")
 
-Load credentials into the current PowerShell session:
+[System.Environment]::SetEnvironmentVariable(
+    "Path",
+    "$userPath;C:\approved-tools\terraform",
+    "User"
+)
 
-<pre class="overflow-visible! px-0!" data-start="4107" data-end="4358"><div class="relative w-full mt-4 mb-1"><div class=""><div class="relative"><div class="h-full min-h-0 min-w-0"><div class="h-full min-h-0 min-w-0"><div class="border border-token-border-light border-radius-3xl corner-superellipse/1.1 rounded-3xl"><div class="h-full w-full border-radius-3xl bg-token-bg-elevated-secondary corner-superellipse/1.1 overflow-clip rounded-3xl lxnfua_clipPathFallback"><div class="pointer-events-none absolute inset-x-4 top-12 bottom-4"><div class="pointer-events-none sticky z-40 shrink-0 z-1!"><div class="sticky bg-token-border-light"></div></div></div><div class="relative"><div class=""><div class="relative z-0 flex max-w-full"><div id="code-block-viewer" dir="ltr" class="q9tKkq_viewer cm-editor z-10 light:cm-light dark:cm-light flex h-full w-full flex-col items-stretch ͼs ͼ16"><div class="cm-scroller"><pre class="cm-content q9tKkq_readonly m-0"><code><span class="ͼ10">Get-Content</span><span></span><span class="ͼ11">infra</span><span>\</span><span class="ͼ11">env</span><span>\.</span><span class="ͼ11">env</span><span>.</span><span class="ͼ11">credentials</span><span></span><span class="ͼv">|</span><span></span><span class="ͼ10">ForEach-Object</span><span> {</span><br/><span></span><span class="ͼv">if</span><span> (</span><span class="ͼ10">$_</span><span></span><span class="ͼv">-match</span><span></span><span class="ͼz">"^\s*#"</span><span></span><span class="ͼv">-or</span><span></span><span class="ͼ10">$_</span><span></span><span class="ͼv">-match</span><span></span><span class="ͼz">"^\s*</span><span class="ͼ15">$</span><span class="ͼz">"</span><span>) { </span><span class="ͼv">return</span><span> }</span><br/><br/><span></span><span class="ͼ11">$name</span><span>, </span><span class="ͼ11">$value</span><span></span><span class="ͼv">=</span><span></span><span class="ͼ10">$_</span><span></span><span class="ͼv">-split</span><span></span><span class="ͼz">"="</span><span>, </span><span class="ͼy">2</span><br/><span>  [</span><span class="ͼ11">Environment</span><span>]</span><span class="ͼv">::</span><span class="ͼ11">SetEnvironmentVariable</span><span>(</span><span class="ͼ11">$name</span><span>.</span><span class="ͼ11">Trim</span><span>(), </span><span class="ͼ11">$value</span><span>.</span><span class="ͼ11">Trim</span><span>(), </span><span class="ͼz">"Process"</span><span>)</span><br/><span>}</span></code></pre></div></div></div></div></div></div></div></div></div><div class=""><div class=""></div></div></div></div></div></pre>
+Write-Host "Terraform agregado al PATH de usuario"
+```
 
-Validate credentials:
+Cierra y vuelve a abrir PowerShell, luego verifica:
 
-<pre class="overflow-visible! px-0!" data-start="4383" data-end="4428"><div class="relative w-full mt-4 mb-1"><div class=""><div class="relative"><div class="h-full min-h-0 min-w-0"><div class="h-full min-h-0 min-w-0"><div class="border border-token-border-light border-radius-3xl corner-superellipse/1.1 rounded-3xl"><div class="h-full w-full border-radius-3xl bg-token-bg-elevated-secondary corner-superellipse/1.1 overflow-clip rounded-3xl lxnfua_clipPathFallback"><div class="pointer-events-none absolute inset-x-4 top-12 bottom-4"><div class="pointer-events-none sticky z-40 shrink-0 z-1!"><div class="sticky bg-token-border-light"></div></div></div><div class="relative"><div class=""><div class="relative z-0 flex max-w-full"><div id="code-block-viewer" dir="ltr" class="q9tKkq_viewer cm-editor z-10 light:cm-light dark:cm-light flex h-full w-full flex-col items-stretch ͼs ͼ16"><div class="cm-scroller"><pre class="cm-content q9tKkq_readonly m-0"><code><span class="ͼ11">aws</span><span></span><span class="ͼ11">sts</span><span></span><span class="ͼ11">get-caller-identity</span></code></pre></div></div></div></div></div></div></div></div></div><div class=""><div class=""></div></div></div></div></div></pre>
+```powershell
+terraform version
+Get-Command terraform
+```
 
----
-
-# 9. Initial Terraform Validation Workflow
-
-Recommended validation flow before any deployment.
-
----
-
-## Terraform Init
-
-<pre class="overflow-visible! px-0!" data-start="4555" data-end="4600"><div class="relative w-full mt-4 mb-1"><div class=""><div class="relative"><div class="h-full min-h-0 min-w-0"><div class="h-full min-h-0 min-w-0"><div class="border border-token-border-light border-radius-3xl corner-superellipse/1.1 rounded-3xl"><div class="h-full w-full border-radius-3xl bg-token-bg-elevated-secondary corner-superellipse/1.1 overflow-clip rounded-3xl lxnfua_clipPathFallback"><div class="pointer-events-none absolute inset-x-4 top-12 bottom-4"><div class="pointer-events-none sticky z-40 shrink-0 z-1!"><div class="sticky bg-token-border-light"></div></div></div><div class="relative"><div class=""><div class="relative z-0 flex max-w-full"><div id="code-block-viewer" dir="ltr" class="q9tKkq_viewer cm-editor z-10 light:cm-light dark:cm-light flex h-full w-full flex-col items-stretch ͼs ͼ16"><div class="cm-scroller"><pre class="cm-content q9tKkq_readonly m-0"><code><span class="ͼ11">terraform</span><span></span><span class="ͼv">-</span><span class="ͼ10">chdir</span><span class="ͼv">=</span><span class="ͼ11">infra</span><span></span><span class="ͼ11">init</span></code></pre></div></div></div></div></div></div></div></div></div><div class=""><div class=""></div></div></div></div></div></pre>
-
----
-
-## Terraform Format Validation
-
-<pre class="overflow-visible! px-0!" data-start="4639" data-end="4690"><div class="relative w-full mt-4 mb-1"><div class=""><div class="relative"><div class="h-full min-h-0 min-w-0"><div class="h-full min-h-0 min-w-0"><div class="border border-token-border-light border-radius-3xl corner-superellipse/1.1 rounded-3xl"><div class="h-full w-full border-radius-3xl bg-token-bg-elevated-secondary corner-superellipse/1.1 overflow-clip rounded-3xl lxnfua_clipPathFallback"><div class="pointer-events-none absolute inset-x-4 top-12 bottom-4"><div class="pointer-events-none sticky z-40 shrink-0 z-1!"><div class="sticky bg-token-border-light"></div></div></div><div class="relative"><div class=""><div class="relative z-0 flex max-w-full"><div id="code-block-viewer" dir="ltr" class="q9tKkq_viewer cm-editor z-10 light:cm-light dark:cm-light flex h-full w-full flex-col items-stretch ͼs ͼ16"><div class="cm-scroller"><pre class="cm-content q9tKkq_readonly m-0"><code><span class="ͼ11">terraform</span><span></span><span class="ͼv">-</span><span class="ͼ10">chdir</span><span class="ͼv">=</span><span class="ͼ11">infra</span><span></span><span class="ͼ11">fmt</span><span></span><span class="ͼv">-</span><span class="ͼ11">check</span></code></pre></div></div></div></div></div></div></div></div></div><div class=""><div class=""></div></div></div></div></div></pre>
+Esto conserva el acceso a Terraform solo para el perfil del usuario actual.
 
 ---
 
-## Terraform Validate
+## 6. Agregar Terraform al PATH del sistema de forma permanente (administrador)
 
-<pre class="overflow-visible! px-0!" data-start="4720" data-end="4769"><div class="relative w-full mt-4 mb-1"><div class=""><div class="relative"><div class="h-full min-h-0 min-w-0"><div class="h-full min-h-0 min-w-0"><div class="border border-token-border-light border-radius-3xl corner-superellipse/1.1 rounded-3xl"><div class="h-full w-full border-radius-3xl bg-token-bg-elevated-secondary corner-superellipse/1.1 overflow-clip rounded-3xl lxnfua_clipPathFallback"><div class="pointer-events-none absolute inset-x-4 top-12 bottom-4"><div class="pointer-events-none sticky z-40 shrink-0 z-1!"><div class="sticky bg-token-border-light"></div></div></div><div class="relative"><div class=""><div class="relative z-0 flex max-w-full"><div id="code-block-viewer" dir="ltr" class="q9tKkq_viewer cm-editor z-10 light:cm-light dark:cm-light flex h-full w-full flex-col items-stretch ͼs ͼ16"><div class="cm-scroller"><pre class="cm-content q9tKkq_readonly m-0"><code><span class="ͼ11">terraform</span><span></span><span class="ͼv">-</span><span class="ͼ10">chdir</span><span class="ͼv">=</span><span class="ͼ11">infra</span><span></span><span class="ͼ11">validate</span></code></pre></div></div></div></div></div></div></div></div></div><div class=""><div class=""></div></div></div></div></div></pre>
+Usa esto cuando administras la máquina y quieres que Terraform esté
+disponible para todo el sistema.
 
----
+Abre PowerShell como Administrador:
 
-## Terraform Plan
+```powershell
+$terraformPath = "C:\approved-tools\terraform"
 
-<pre class="overflow-visible! px-0!" data-start="4795" data-end="4854"><div class="relative w-full mt-4 mb-1"><div class=""><div class="relative"><div class="h-full min-h-0 min-w-0"><div class="h-full min-h-0 min-w-0"><div class="border border-token-border-light border-radius-3xl corner-superellipse/1.1 rounded-3xl"><div class="h-full w-full border-radius-3xl bg-token-bg-elevated-secondary corner-superellipse/1.1 overflow-clip rounded-3xl lxnfua_clipPathFallback"><div class="pointer-events-none absolute inset-x-4 top-12 bottom-4"><div class="pointer-events-none sticky z-40 shrink-0 z-1!"><div class="sticky bg-token-border-light"></div></div></div><div class="relative"><div class=""><div class="relative z-0 flex max-w-full"><div id="code-block-viewer" dir="ltr" class="q9tKkq_viewer cm-editor z-10 light:cm-light dark:cm-light flex h-full w-full flex-col items-stretch ͼs ͼ16"><div class="cm-scroller"><pre class="cm-content q9tKkq_readonly m-0"><code><span class="ͼ11">terraform</span><span></span><span class="ͼv">-</span><span class="ͼ10">chdir</span><span class="ͼv">=</span><span class="ͼ11">infra</span><span></span><span class="ͼ11">plan</span><span></span><span class="ͼv">-</span><span class="ͼ11">out</span><span class="ͼv">=</span><span class="ͼz">"tfplan"</span></code></pre></div></div></div></div></div></div></div></div></div><div class=""><div class=""></div></div></div></div></div></pre>
+[System.Environment]::SetEnvironmentVariable(
+    "Path",
+    [System.Environment]::GetEnvironmentVariable("Path", "Machine") + ";$terraformPath",
+    "Machine"
+)
 
----
+Write-Host "Terraform agregado al PATH del sistema"
+```
 
-## Terraform Apply
+Cierra y vuelve a abrir PowerShell, luego verifica:
 
-<pre class="overflow-visible! px-0!" data-start="4881" data-end="4936"><div class="relative w-full mt-4 mb-1"><div class=""><div class="relative"><div class="h-full min-h-0 min-w-0"><div class="h-full min-h-0 min-w-0"><div class="border border-token-border-light border-radius-3xl corner-superellipse/1.1 rounded-3xl"><div class="h-full w-full border-radius-3xl bg-token-bg-elevated-secondary corner-superellipse/1.1 overflow-clip rounded-3xl lxnfua_clipPathFallback"><div class="pointer-events-none absolute inset-x-4 top-12 bottom-4"><div class="pointer-events-none sticky z-40 shrink-0 z-1!"><div class="sticky bg-token-border-light"></div></div></div><div class="relative"><div class=""><div class="relative z-0 flex max-w-full"><div id="code-block-viewer" dir="ltr" class="q9tKkq_viewer cm-editor z-10 light:cm-light dark:cm-light flex h-full w-full flex-col items-stretch ͼs ͼ16"><div class="cm-scroller"><pre class="cm-content q9tKkq_readonly m-0"><code><span class="ͼ11">terraform</span><span></span><span class="ͼv">-</span><span class="ͼ10">chdir</span><span class="ͼv">=</span><span class="ͼ11">infra</span><span></span><span class="ͼ11">apply</span><span></span><span class="ͼz">"tfplan"</span></code></pre></div></div></div></div></div></div></div></div></div><div class=""><div class=""></div></div></div></div></div></pre>
-
----
-
-## Terraform Outputs
-
-<pre class="overflow-visible! px-0!" data-start="4965" data-end="5012"><div class="relative w-full mt-4 mb-1"><div class=""><div class="relative"><div class="h-full min-h-0 min-w-0"><div class="h-full min-h-0 min-w-0"><div class="border border-token-border-light border-radius-3xl corner-superellipse/1.1 rounded-3xl"><div class="h-full w-full border-radius-3xl bg-token-bg-elevated-secondary corner-superellipse/1.1 overflow-clip rounded-3xl lxnfua_clipPathFallback"><div class="pointer-events-none absolute inset-x-4 top-12 bottom-4"><div class="pointer-events-none sticky z-40 shrink-0 z-1!"><div class="sticky bg-token-border-light"></div></div></div><div class="relative"><div class=""><div class="relative z-0 flex max-w-full"><div id="code-block-viewer" dir="ltr" class="q9tKkq_viewer cm-editor z-10 light:cm-light dark:cm-light flex h-full w-full flex-col items-stretch ͼs ͼ16"><div class="cm-scroller"><pre class="cm-content q9tKkq_readonly m-0"><code><span class="ͼ11">terraform</span><span></span><span class="ͼv">-</span><span class="ͼ10">chdir</span><span class="ͼv">=</span><span class="ͼ11">infra</span><span></span><span class="ͼ11">output</span></code></pre></div></div></div></div></div></div></div></div></div><div class=""><div class=""></div></div></div></div></div></pre>
-
-JSON format:
-
-<pre class="overflow-visible! px-0!" data-start="5028" data-end="5081"><div class="relative w-full mt-4 mb-1"><div class=""><div class="relative"><div class="h-full min-h-0 min-w-0"><div class="h-full min-h-0 min-w-0"><div class="border border-token-border-light border-radius-3xl corner-superellipse/1.1 rounded-3xl"><div class="h-full w-full border-radius-3xl bg-token-bg-elevated-secondary corner-superellipse/1.1 overflow-clip rounded-3xl lxnfua_clipPathFallback"><div class="pointer-events-none absolute inset-x-4 top-12 bottom-4"><div class="pointer-events-none sticky z-40 shrink-0 z-1!"><div class="sticky bg-token-border-light"></div></div></div><div class="relative"><div class=""><div class="relative z-0 flex max-w-full"><div id="code-block-viewer" dir="ltr" class="q9tKkq_viewer cm-editor z-10 light:cm-light dark:cm-light flex h-full w-full flex-col items-stretch ͼs ͼ16"><div class="cm-scroller"><pre class="cm-content q9tKkq_readonly m-0"><code><span class="ͼ11">terraform</span><span></span><span class="ͼv">-</span><span class="ͼ10">chdir</span><span class="ͼv">=</span><span class="ͼ11">infra</span><span></span><span class="ͼ11">output</span><span></span><span class="ͼv">-</span><span class="ͼ11">json</span></code></pre></div></div></div></div></div></div></div></div></div><div class=""><div class=""></div></div></div></div></div></pre>
-
----
-
-# 10. Recommended Corporate Practices
-
-For restricted corporate environments:
-
-* Prefer official portable binaries
-* Avoid package managers when possible
-* Keep Terraform version explicit
-* Use local user-scoped PATH configuration
-* Store helper scripts under:
-
-<pre class="overflow-visible! px-0!" data-start="5350" data-end="5389"><div class="relative w-full mt-4 mb-1"><div class=""><div class="relative"><div class="h-full min-h-0 min-w-0"><div class="h-full min-h-0 min-w-0"><div class="border border-token-border-light border-radius-3xl corner-superellipse/1.1 rounded-3xl"><div class="h-full w-full border-radius-3xl bg-token-bg-elevated-secondary corner-superellipse/1.1 overflow-clip rounded-3xl lxnfua_clipPathFallback"><div class="pointer-events-none absolute end-1.5 top-1 z-2 md:end-2 md:top-1"></div><div class="relative"><div class="pe-11 pt-3"><div class="relative z-0 flex max-w-full"><div id="code-block-viewer" dir="ltr" class="q9tKkq_viewer cm-editor z-10 light:cm-light dark:cm-light flex h-full w-full flex-col items-stretch ͼs ͼ16"><div class="cm-scroller"><pre class="cm-content q9tKkq_readonly m-0"><code><span>tests/aws/</span><br/><span>scripts/windows/</span></code></pre></div></div></div></div></div></div></div></div></div><div class=""><div class=""></div></div></div></div></div></pre>
-
-* Avoid hardcoding credentials inside `.tfvars`
-* Prefer `.env.credentials` or AWS profiles
-* Validate IAM permissions before deployment
-
-Recommended validation checks before `apply`:
-
-<pre class="overflow-visible! px-0!" data-start="5576" data-end="5685"><div class="relative w-full mt-4 mb-1"><div class=""><div class="relative"><div class="h-full min-h-0 min-w-0"><div class="h-full min-h-0 min-w-0"><div class="border border-token-border-light border-radius-3xl corner-superellipse/1.1 rounded-3xl"><div class="h-full w-full border-radius-3xl bg-token-bg-elevated-secondary corner-superellipse/1.1 overflow-clip rounded-3xl lxnfua_clipPathFallback"><div class="pointer-events-none absolute inset-x-4 top-12 bottom-4"><div class="pointer-events-none sticky z-40 shrink-0 z-1!"><div class="sticky bg-token-border-light"></div></div></div><div class="relative"><div class=""><div class="relative z-0 flex max-w-full"><div id="code-block-viewer" dir="ltr" class="q9tKkq_viewer cm-editor z-10 light:cm-light dark:cm-light flex h-full w-full flex-col items-stretch ͼs ͼ16"><div class="cm-scroller"><pre class="cm-content q9tKkq_readonly m-0"><code><span class="ͼ11">terraform</span><span></span><span class="ͼ11">version</span><br/><span class="ͼ11">aws</span><span></span><span class="ͼv">--</span><span class="ͼ11">version</span><br/><span class="ͼ11">aws</span><span></span><span class="ͼ11">sts</span><span></span><span class="ͼ11">get-caller-identity</span><br/><span class="ͼ11">terraform</span><span></span><span class="ͼv">-</span><span class="ͼ10">chdir</span><span class="ͼv">=</span><span class="ͼ11">infra</span><span></span><span class="ͼ11">validate</span></code></pre></div></div></div></div></div></div></div></div></div><div class=""><div class=""></div></div></div></div></div></pre>
+```powershell
+terraform version
+Get-Command terraform
+```
 
 ---
 
-# 11. Quick Verification Commands
+## 7. Instalar AWS CLI
 
-<pre class="overflow-visible! px-0!" data-start="5727" data-end="5904"><div class="relative w-full mt-4 mb-1"><div class=""><div class="relative"><div class="h-full min-h-0 min-w-0"><div class="h-full min-h-0 min-w-0"><div class="border border-token-border-light border-radius-3xl corner-superellipse/1.1 rounded-3xl"><div class="h-full w-full border-radius-3xl bg-token-bg-elevated-secondary corner-superellipse/1.1 overflow-clip rounded-3xl lxnfua_clipPathFallback"><div class="pointer-events-none absolute inset-x-4 top-12 bottom-4"><div class="pointer-events-none sticky z-40 shrink-0 z-1!"><div class="sticky bg-token-border-light"></div></div></div><div class="relative"><div class=""><div class="relative z-0 flex max-w-full"><div id="code-block-viewer" dir="ltr" class="q9tKkq_viewer cm-editor z-10 light:cm-light dark:cm-light flex h-full w-full flex-col items-stretch ͼs ͼ16"><div class="cm-scroller"><pre class="cm-content q9tKkq_readonly m-0"><code><span class="ͼ11">terraform</span><span></span><span class="ͼ11">version</span><br/><span class="ͼ11">terraform</span><span></span><span class="ͼv">-</span><span class="ͼ10">help</span><br/><span class="ͼ10">Get-Command</span><span></span><span class="ͼ11">terraform</span><br/><br/><span class="ͼ11">aws</span><span></span><span class="ͼv">--</span><span class="ͼ11">version</span><br/><span class="ͼ11">aws</span><span></span><span class="ͼ11">sts</span><span></span><span class="ͼ11">get-caller-identity</span><br/><br/><span class="ͼ11">terraform</span><span></span><span class="ͼv">-</span><span class="ͼ10">chdir</span><span class="ͼv">=</span><span class="ͼ11">infra</span><span></span><span class="ͼ11">init</span><br/><span class="ͼ11">terraform</span><span></span><span class="ͼv">-</span><span class="ͼ10">chdir</span><span class="ͼv">=</span><span class="ͼ11">infra</span><span></span><span class="ͼ11">validate</span></code></pre></div></div></div></div></div></div></div></div></div><div class=""><div class=""></div></div></div></div></div></pre>
+Terraform normalmente interactúa con servicios de AWS, así que AWS CLI
+también debe instalarse y validarse.
+
+Descarga:
+
+[AWS CLI Installer](https://aws.amazon.com/cli/)
+
+Verificar la instalación:
+
+```powershell
+aws --version
+Get-Command aws
+```
 
 ---
 
-# 12. Recommended Tooling
+## 8. Configurar credenciales de AWS
 
-Recommended tooling for a reproducible AI-assisted Terraform workflow:
+### Opción A: `aws configure` estándar
+
+Ejecuta:
+
+```powershell
+aws configure
+```
+
+Proporciona:
+
+```text
+AWS Access Key ID
+AWS Secret Access Key
+Default region
+Default output format
+```
+
+Esto crea:
+
+```text
+C:\Users\<USUARIO>\.aws\credentials
+C:\Users\<USUARIO>\.aws\config
+```
+
+---
+
+### Opción B: variables de entorno (`.env.credentials`)
+
+Ejemplo:
+
+```text
+AWS_ACCESS_KEY_ID=XXXXXXXX
+AWS_SECRET_ACCESS_KEY=XXXXXXXX
+AWS_DEFAULT_REGION=us-east-1
+```
+
+Cargar las credenciales en la sesión actual de PowerShell:
+
+```powershell
+Get-Content infra\env\.env.credentials | ForEach-Object {
+  if ($_ -match "^\s*#" -or $_ -match "^\s*$") { return }
+
+  $name, $value = $_ -split "=", 2
+  [Environment]::SetEnvironmentVariable($name.Trim(), $value.Trim(), "Process")
+}
+```
+
+Validar las credenciales:
+
+```powershell
+aws sts get-caller-identity
+```
+
+---
+
+## 9. Flujo inicial de validación de Terraform
+
+Flujo de validación recomendado antes de cualquier despliegue.
+
+---
+
+### Terraform Init
+
+```powershell
+terraform -chdir=infra init
+```
+
+---
+
+### Validación de formato de Terraform
+
+```powershell
+terraform -chdir=infra fmt -check
+```
+
+---
+
+### Terraform Validate
+
+```powershell
+terraform -chdir=infra validate
+```
+
+---
+
+### Terraform Plan
+
+```powershell
+terraform -chdir=infra plan -out="tfplan"
+```
+
+---
+
+### Terraform Apply
+
+```powershell
+terraform -chdir=infra apply "tfplan"
+```
+
+---
+
+### Terraform Outputs
+
+```powershell
+terraform -chdir=infra output
+```
+
+Formato JSON:
+
+```powershell
+terraform -chdir=infra output -json
+```
+
+---
+
+## 10. Prácticas corporativas recomendadas
+
+Para entornos corporativos restringidos:
+
+* Preferir binarios portables oficiales
+* Evitar gestores de paquetes cuando sea posible
+* Mantener explícita la versión de Terraform
+* Usar configuración de PATH de alcance local de usuario
+* Guardar scripts auxiliares bajo:
+
+```text
+tests/aws/
+scripts/windows/
+```
+
+* Evitar hardcodear credenciales dentro de `.tfvars`
+* Preferir `.env.credentials` o perfiles de AWS
+* Validar permisos IAM antes del despliegue
+
+Comprobaciones de validación recomendadas antes de `apply`:
+
+```powershell
+terraform version
+aws --version
+aws sts get-caller-identity
+terraform -chdir=infra validate
+```
+
+---
+
+## 11. Comandos de verificación rápida
+
+```powershell
+terraform version
+terraform -help
+Get-Command terraform
+
+aws --version
+aws sts get-caller-identity
+
+terraform -chdir=infra init
+terraform -chdir=infra validate
+```
+
+---
+
+## 12. Herramientas recomendadas
+
+Conjunto de herramientas recomendado para un flujo de trabajo con Terraform
+reproducible y asistido por IA:
 
 * Terraform
 * AWS CLI

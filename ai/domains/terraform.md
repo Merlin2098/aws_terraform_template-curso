@@ -29,17 +29,24 @@ shapes, mocks, stacks, resource import, security fundamentals).
 
 | Skill | File | Description |
 |---|---|---|
-| Modules | `ai/skills/terraform/modules.md` | Reusable module patterns |
 | State management | `ai/skills/terraform/state_management.md` | State backends, overrides, and hygiene |
 | Observability | `ai/skills/terraform/terraform_observability.md` | CloudWatch log groups, retention policies, mandatory outputs |
 | Governance | `ai/skills/terraform/terraform_governance.md` | Tagging enforcement, budget governance, cost awareness, drift management |
-| Environment promotion | `ai/skills/terraform/environment_promotion.md` | Directory-per-environment pattern, state isolation, immutable artifact promotion |
 
 For generic Terraform mechanics not tied to this project's own conventions
-(style/formatting, CI/CD pipeline shapes, mocks, stacks, resource import,
-security fundamentals, IAM least-privilege theory) — consult the Terraform
-MCP or official HashiCorp documentation directly rather than a local skill;
-this domain only keeps skills encoding project-specific decisions.
+(module design, directory-per-environment layout, style/formatting, CI/CD
+pipeline shapes, mocks, stacks, resource import, security fundamentals,
+IAM least-privilege theory) — consult the Terraform MCP or official
+HashiCorp documentation directly rather than a local skill; this domain
+only keeps skills encoding project-specific decisions. `infra/` is
+currently a single flat root module (no `envs/` or `modules/` layer) —
+if that changes, module/promotion patterns belong back here as
+project-specific skills, not before.
+
+Never hardcode a specific Terraform or provider version constraint in a
+skill's prose (e.g. "AWS provider >= 5.81"). Versions drift; query the
+Terraform MCP (`get_latest_provider_version`, `search_providers`) for the
+current number instead of trusting what's written here.
 
 ---
 
@@ -53,7 +60,12 @@ Key constraints from `AGENTS.md` that are enforced at the Terraform level:
 - IAM changes require explicit review before applying.
 - S3 versioning must not be enabled by default — only when explicitly requested and justified.
 - Every resource must carry `local.common_tags` including `CostCenter`.
-- Every module must expose `log_group_name`, `log_group_arn`, and `resource_arn` as outputs.
+- Every deployable module or root module must expose `log_group_name` and
+  `log_group_arn` for its log group(s), plus a purpose-named ARN output for
+  each principal resource other stacks may need to reference (e.g.
+  `artifact_bucket_arn`, `data_job_execution_role_arn`) — not a single
+  generic `resource_arn`, since a module producing more than one resource
+  (the common case here) has no single ARN that name could mean.
 - `terraform.tfstate` must never be deleted or overwritten.
 
 Preferred execution:

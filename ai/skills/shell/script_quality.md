@@ -107,7 +107,7 @@ Every exported function or script must include:
     Shows what would happen without making changes.
 
 .NOTES
-    Requires: AWS CLI configured, terraform >= 1.5
+    Requires: AWS CLI configured, terraform (see infra/providers.tf for the pinned version)
     Approval: terraform apply requires explicit confirmation.
 #>
 ```

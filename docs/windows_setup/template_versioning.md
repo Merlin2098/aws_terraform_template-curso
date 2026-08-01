@@ -1,13 +1,15 @@
-# Template Versioning and Host Updates
+# Versionado de la plantilla y actualizaciones del host
 
-This guide explains how the installer detects whether a host repository needs
-updating, how divergence is classified, and when to bump the framework version.
+Esta guía explica cómo el instalador detecta si un repositorio host necesita
+actualizarse, cómo se clasifica la divergencia, y cuándo subir la versión del
+framework.
 
-## How Divergence Detection Works
+## Cómo funciona la detección de divergencia
 
-Every installation writes a `.framework-version.json` file to the host
-repository root. It records the template version, the installed capability set,
-and **content fingerprints** for every framework-owned file:
+Cada instalación escribe un archivo `.framework-version.json` en la raíz del
+repositorio host. Registra la versión de la plantilla, el conjunto de
+capacidades instaladas, y **huellas de contenido** (fingerprints) de cada
+archivo propiedad del framework:
 
 ```json
 {
@@ -23,118 +25,122 @@ and **content fingerprints** for every framework-owned file:
 }
 ```
 
-`tree_digest` is an aggregate hash of the entire framework-owned tree (all
-`sha256` values, sorted by path). When you run the installer against an
-already-installed host, `update_template` uses it as a fast gate:
+`tree_digest` es un hash agregado de todo el árbol propiedad del framework
+(todos los valores `sha256`, ordenados por ruta). Cuando ejecutas el
+instalador contra un host ya instalado, `update_template` lo usa como filtro
+rápido:
 
 ```python
 if template_tree_digest == state["tree_digest"] and not locally_modified:
     return {"up_to_date": True, ...}
 ```
 
-If the tree matches **and** no file in the host was locally modified, the update
-is skipped immediately without reading every file.
+Si el árbol coincide **y** ningún archivo del host fue modificado localmente,
+la actualización se omite de inmediato sin leer cada archivo.
 
-### Three-way classification
+### Clasificación de tres vías
 
-When the tree has changed (or `--force` is passed), each framework-owned file
-is classified by comparing three hashes:
+Cuando el árbol cambió (o se pasa `--force`), cada archivo propiedad del
+framework se clasifica comparando tres hashes:
 
-| Host file vs state hash | Template vs state hash | Classification | Action |
+| Archivo host vs hash de estado | Plantilla vs hash de estado | Clasificación | Acción |
 |---|---|---|---|
-| same | same | `unchanged` | nothing |
-| same | different | `updatable` | overwrite |
-| different | same | `locally-modified` | preserve + warn |
-| different | different | `conflict` | preserve + warn |
-| missing | — | `missing` | re-copy |
+| igual | igual | `unchanged` | nada |
+| igual | distinto | `updatable` | sobrescribir |
+| distinto | igual | `locally-modified` | conservar + advertir |
+| distinto | distinto | `conflict` | conservar + advertir |
+| falta | — | `missing` | volver a copiar |
 
-`--force` bypasses the classification and overwrites all `managed` files.
+`--force` omite la clasificación y sobrescribe todos los archivos `managed`.
 
-### Ownership
+### Propiedad (ownership)
 
-Each manifest entry carries an `ownership` value:
+Cada entrada del manifiesto lleva un valor `ownership`:
 
-| Value | Meaning |
+| Valor | Significado |
 |---|---|
-| `managed` | Framework owns this file; overwritten on every update. |
-| `append-only` | Copied once on first install; on update only missing entries are merged in (e.g. `.pre-commit-config.yaml`). |
+| `managed` | El framework es dueño de este archivo; se sobrescribe en cada actualización. |
+| `append-only` | Se copia una sola vez en la primera instalación; en actualizaciones posteriores solo se fusionan las entradas faltantes (p. ej. `.pre-commit-config.yaml`). |
 
-`src/`, `infra/`, `tests/`, and `specs/project/` are **host-owned** and never
-appear in the manifest — the installer never touches them.
+`src/`, `infra/`, `tests/`, y `specs/project/` son **propiedad del host** y
+nunca aparecen en el manifiesto — el instalador nunca los toca.
 
-## Role of `framework_version`
+## Rol de `framework_version`
 
-`framework_version` is a **governance label** (changelog, breaking-change
-anchor), not a sync detector. Changing files in the template without bumping the
-version **will still propagate** to the host — the divergence detector is the
-tree digest and per-file hashes, not the version string.
+`framework_version` es una **etiqueta de gobernanza** (changelog, ancla de
+cambios disruptivos), no un detector de sincronización. Cambiar archivos en
+la plantilla sin subir la versión **igual se propagará** al host — el
+detector de divergencia es el hash del árbol y los hashes por archivo, no la
+cadena de versión.
 
-Use `framework_version` to:
+Usa `framework_version` para:
 
-- Communicate what a host is running (e.g. `0.2.0`).
-- Anchor breaking changes that require a forced reinstall.
-- Build a changelog across releases.
+- Comunicar qué versión está corriendo un host (p. ej. `0.2.0`).
+- Anclar cambios disruptivos que requieren una reinstalación forzada.
+- Construir un changelog entre releases.
 
-## Workarounds
+## Soluciones alternativas
 
-### `--force`: bypass classification
+### `--force`: omitir la clasificación
 
-Pass `--force` to overwrite all `managed`/`generated` files regardless of
-their classification:
+Pasa `--force` para sobrescribir todos los archivos `managed`/`generated` sin
+importar su clasificación:
 
 ```powershell
-python install_windows.py --target <path-to-host> --force
+python install_windows.py --target <ruta-al-host> --force
 ```
 
-Use `--dry-run --force` first to preview what would be written:
+Usa `--dry-run --force` primero para previsualizar qué se escribiría:
 
 ```powershell
-python install_windows.py --target <path-to-host> --force --dry-run
+python install_windows.py --target <ruta-al-host> --force --dry-run
 ```
 
-### Handling `locally-modified` / `conflict`
+### Manejar `locally-modified` / `conflict`
 
-If the update reports locally-modified or conflicting files, review the
-differences manually and then re-run with `--force` to accept the template
-version, or keep your edits as-is.
+Si la actualización reporta archivos modificados localmente o en conflicto,
+revisa las diferencias manualmente y luego vuelve a ejecutar con `--force`
+para aceptar la versión de la plantilla, o conserva tus cambios tal cual.
 
-## When to Bump the Version
+## Cuándo subir la versión
 
-Bump the version in the `VERSION` file when:
+Sube la versión en el archivo `VERSION` cuando:
 
-- You want a clear audit trail of what generation a host is running.
-- You are introducing a breaking change that requires re-running the installer.
-- CI/CD automation needs to report the running generation.
+- Quieras un rastro de auditoría claro de qué generación está corriendo un
+  host.
+- Estés introduciendo un cambio disruptivo que requiera volver a ejecutar el
+  instalador.
+- La automatización de CI/CD necesite reportar la generación en ejecución.
 
-Version bumps follow [Semantic Versioning](https://semver.org/):
+Los incrementos de versión siguen [Semantic Versioning](https://semver.org/):
 
-| Change type | Example bump |
+| Tipo de cambio | Ejemplo de incremento |
 |---|---|
-| Patch — small fix or content update | `0.1.0` → `0.1.1` |
-| Minor — new capability or file added | `0.1.0` → `0.2.0` |
-| Major — breaking change to structure | `0.1.0` → `1.0.0` |
+| Patch — corrección menor o actualización de contenido | `0.1.0` → `0.1.1` |
+| Minor — nueva capacidad o archivo agregado | `0.1.0` → `0.2.0` |
+| Major — cambio disruptivo en la estructura | `0.1.0` → `1.0.0` |
 
-After bumping, run the installer normally — the divergence detector will find
-the changed files regardless:
+Después de subir la versión, ejecuta el instalador normalmente — el detector
+de divergencia encontrará los archivos cambiados de todas formas:
 
 ```powershell
-python install_windows.py --target <path-to-host>
+python install_windows.py --target <ruta-al-host>
 ```
 
-## Quick Reference
+## Referencia rápida
 
-| Goal | Command |
+| Objetivo | Comando |
 |---|---|
-| Update host (smart diff) | `python install_windows.py --target <path>` |
-| Force overwrite all framework files | `python install_windows.py --target <path> --force` |
-| Preview update (no writes) | `python install_windows.py --target <path> --dry-run` |
-| Preview force update | `python install_windows.py --target <path> --force --dry-run` |
-| Check current template version | `cat VERSION` |
-| Check host installed version | `cat <host>/.framework-version.json` |
+| Actualizar host (diff inteligente) | `python install_windows.py --target <ruta>` |
+| Forzar sobrescritura de todos los archivos del framework | `python install_windows.py --target <ruta> --force` |
+| Previsualizar actualización (sin escribir) | `python install_windows.py --target <ruta> --dry-run` |
+| Previsualizar actualización forzada | `python install_windows.py --target <ruta> --force --dry-run` |
+| Comprobar la versión actual de la plantilla | `cat VERSION` |
+| Comprobar la versión instalada en el host | `cat <host>/.framework-version.json` |
 
-## Architecture reference
+## Referencia de arquitectura
 
-The fingerprint mechanism is specified in
-[`specs/rework/ADR-FW-003.md`](../../../specs/rework/ADR-FW-003.md) and
-analysed in
+El mecanismo de huellas (fingerprints) está especificado en
+[`specs/rework/ADR-FW-003.md`](../../../specs/rework/ADR-FW-003.md) y
+analizado en
 [`specs/rework/SPEC-FW-016.md`](../../../specs/rework/SPEC-FW-016.md).

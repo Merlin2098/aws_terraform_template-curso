@@ -14,13 +14,19 @@ Terraform and cannot be managed (retention, tags, deletion).
 
 ## Mandatory outputs
 
-Every module must expose at minimum:
+Every deployable module or root module must expose, at minimum, its log
+group outputs plus a purpose-named ARN output for each principal resource
+other stacks may need to reference:
 
 ```hcl
-output "resource_arn"    {}
-output "resource_name"   {}
-output "log_group_name"  {}
+output "log_group_name"           {}
+output "log_group_arn"            {}
+output "<resource_purpose>_arn"   {}  # e.g. artifact_bucket_arn, data_job_execution_role_arn
 ```
+
+Do not expose a single generic `resource_arn` — a module producing more
+than one resource (the common case here) has no single ARN that name
+could unambiguously mean. Name each ARN output after what it points to.
 
 ## Pattern: explicit log group declaration
 
@@ -34,7 +40,7 @@ resource "aws_cloudwatch_log_group" "my_service" {
 
 Always:
 - Use a structured name path: `/aws/<service-type>/<name-prefix>`
-- Apply `local.common_tags` (includes `Project`, `Environment`, `Owner`, `ManagedBy`, `CostCenter`)
+- Apply `local.common_tags` — see `ai/skills/terraform/terraform_governance.md` for the definition
 - Set `retention_in_days` from a variable — never omit or hardcode
 
 ## Retention standard (SPEC-009 §5.3)

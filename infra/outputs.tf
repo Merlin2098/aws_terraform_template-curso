@@ -3,6 +3,11 @@ output "artifact_bucket_name" {
   value       = aws_s3_bucket.artifacts.bucket
 }
 
+output "artifact_bucket_arn" {
+  description = "ARN of the artifact bucket, for IAM policy scoping by other stacks."
+  value       = aws_s3_bucket.artifacts.arn
+}
+
 output "artifact_bundle_s3_uri" {
   description = "S3 URI of the packaged runtime artifact."
   value       = "s3://${aws_s3_bucket.artifacts.bucket}/${aws_s3_object.artifact_bundle.key}"

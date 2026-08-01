@@ -29,8 +29,21 @@ ni llaman a la API de AWS por sí mismos.
 ## Prerrequisitos
 
 - Claude Code instalado y funcionando (`claude --version`).
-- Node.js disponible si el servidor MCP se ejecuta vía `npx` (ambos servidores
-  oficiales lo soportan).
+- Node.js disponible si el servidor MCP se ejecuta vía `npx` (el servidor de
+  AWS Documentation lo soporta).
+- **Docker Desktop instalado y en ejecución** — el Terraform MCP Server
+  oficial de HashiCorp se distribuye como imagen de contenedor
+  (`docker.io/hashicorp/terraform-mcp-server`) y Claude Code lo arranca con
+  `docker run`. Sin el daemon de Docker activo, el servidor queda registrado
+  pero falla al conectar (`claude mcp list` lo muestra como
+  `✘ Failed to connect — Connection closed`). Verificar con:
+
+  ```bash
+  docker info
+  ```
+
+  Si el comando falla, abrir Docker Desktop y esperar a que el daemon esté
+  listo antes de invocar cualquier herramienta del MCP de Terraform.
 
 ---
 
@@ -57,8 +70,11 @@ sesión de Claude Code.
 
 ## Instalación — Terraform MCP Server
 
+Requiere Docker Desktop en ejecución (ver Prerrequisitos). El servidor se
+lanza como contenedor efímero por invocación:
+
 ```bash
-claude mcp add terraform-mcp-server -- npx -y @hashicorp/terraform-mcp-server
+claude mcp add terraform -- docker run -i --rm docker.io/hashicorp/terraform-mcp-server:1.0.0
 ```
 
 Verificar:
@@ -67,9 +83,13 @@ Verificar:
 claude mcp list
 ```
 
-> Si el nombre exacto del paquete npm difiere en el momento de instalar,
-> confirmar el comando actual en la documentación oficial del servidor MCP de
-> Terraform antes de ejecutarlo — los paquetes MCP cambian de nombre con
+Debe aparecer `terraform: docker run -i --rm docker.io/hashicorp/terraform-mcp-server:1.0.0 - ✔ Connected`.
+Si aparece `✘ Failed to connect`, la causa casi siempre es que Docker Desktop
+no está corriendo — confirmar con `docker info` y reintentar.
+
+> Si el tag de imagen (`1.0.0`) difiere en el momento de instalar, confirmar
+> la versión actual en la documentación oficial del servidor MCP de
+> Terraform antes de ejecutarlo — las imágenes MCP cambian de versión con
 > cierta frecuencia mientras el ecosistema madura.
 
 ---
@@ -81,10 +101,10 @@ claude mcp list
   `ai/skills/aws/aws_cli.md` y `docs/education/temario_aws_v2.md`.
 - A partir de **Sesión 2** (Terraform), el MCP de Terraform reemplaza la
   necesidad de una skill local de estilo/sintaxis genérica: usar el MCP para
-  dudas de sintaxis, argumentos de recursos, o versiones de provider; usar
-  `ai/skills/terraform/modules.md`, `state_management.md`,
-  `terraform_governance.md` y `environment_promotion.md` para las
-  convenciones y decisiones propias de este proyecto.
+  dudas de sintaxis, argumentos de recursos, diseño de módulos, o versiones
+  de provider (nunca fijar un número de versión de memoria — consultarlo);
+  usar `ai/skills/terraform/state_management.md` y `terraform_governance.md`
+  para las convenciones y decisiones propias de este proyecto.
 
 ---
 
@@ -107,6 +127,7 @@ claude mcp list
 |---|---|---|
 | `claude mcp list` no muestra el servidor recién agregado | Comando ejecutado en un directorio distinto o con alcance de proyecto en vez de global | Repetir `claude mcp add` con el flag de alcance deseado, o revisar `claude mcp add --help` |
 | Timeout o error al invocar una herramienta del MCP | Sin conexión a internet, o `npx` no pudo descargar el paquete la primera vez | Verificar conectividad; volver a intentar la invocación (npx cachea el paquete tras la primera descarga) |
+| `terraform` aparece como `✘ Failed to connect — Connection closed` en `claude mcp list` | Docker Desktop no está en ejecución — `docker run` no puede arrancar el contenedor del servidor | Abrir Docker Desktop, esperar a que `docker info` responda sin error, y volver a intentar (no requiere reinstalar el MCP) |
 | El MCP no aparece como disponible dentro de una sesión ya abierta | Los MCP se cargan al iniciar la sesión | Cerrar y reabrir Claude Code después de instalar |
 
 ---

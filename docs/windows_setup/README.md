@@ -1,98 +1,101 @@
-# Windows Setup
+# Configuración en Windows
 
-This guide prepares a Windows machine to use this template and to install it into
-another repository.
+Esta guía prepara una máquina Windows para usar esta plantilla y para
+instalarla en otro repositorio.
 
-## Prepare the Template Repository
+## Preparar el repositorio de la plantilla
 
-From the repository root:
+Desde la raíz del repositorio:
 
 ```powershell
 .\scripts\windows\setup_env.ps1
 ```
 
-This Windows wrapper resolves Python automatically, creates `.venv` if needed
-with `python -m venv`, and installs dependencies with `pip` from the project's
-current `requirements.txt` (and `requirements-dev.txt` unless `-NoDev` is
-passed).
+Este wrapper de Windows resuelve Python automáticamente, crea `.venv` si es
+necesario con `python -m venv`, e instala las dependencias con `pip` a partir
+del `requirements.txt` actual del proyecto (y `requirements-dev.txt`, a menos
+que se pase `-NoDev`).
 
-When you install this template into another repository, the installer copies
-`requirements.txt` and `requirements-dev.txt`.
+Cuando instalas esta plantilla en otro repositorio, el instalador copia
+`requirements.txt` y `requirements-dev.txt`.
 
-Install pre-commit into the current repository environment:
+Instalar pre-commit en el entorno del repositorio actual:
 
 ```powershell
 .\.venv\Scripts\pre-commit.exe install
 .\.venv\Scripts\pre-commit.exe --version
 ```
 
-To run all configured hooks manually:
+Para ejecutar todos los hooks configurados manualmente:
 
 ```powershell
 .\.venv\Scripts\pre-commit.exe run --all-files
 ```
 
-Reference: https://pre-commit.com/
+Referencia: https://pre-commit.com/
 
-## Refresh or Change the Environment
+## Refrescar o cambiar el entorno
 
-To refresh the local environment after editing dependencies:
+Para refrescar el entorno local después de editar dependencias:
 
 ```powershell
 .\scripts\windows\update_venv.ps1
 ```
 
-To sync only runtime dependencies (skip development tooling):
+Para sincronizar solo las dependencias de runtime (omitiendo herramientas de
+desarrollo):
 
 ```powershell
 .\scripts\windows\setup_env.ps1 -NoDev
 .\scripts\windows\update_venv.ps1 -NoDev
 ```
 
-## Install This Template Into Another Repo
+## Instalar esta plantilla en otro repositorio
 
-Preview the install without writing files:
+Previsualizar la instalación sin escribir archivos:
 
 ```powershell
-.\.venv\Scripts\python.exe install_windows.py --dry-run --target C:\path\to\target-repo
+.\.venv\Scripts\python.exe install_windows.py --dry-run --target C:\ruta\al\repo-destino
 ```
 
-Install the template by selecting the target repository folder in Explorer:
+Instalar la plantilla seleccionando la carpeta del repositorio destino en el
+Explorador:
 
 ```powershell
 .\.venv\Scripts\python.exe install_windows.py
 ```
 
-Install the template with an explicit target path:
+Instalar la plantilla con una ruta destino explícita:
 
 ```powershell
-.\.venv\Scripts\python.exe install_windows.py --target C:\path\to\target-repo
+.\.venv\Scripts\python.exe install_windows.py --target C:\ruta\al\repo-destino
 ```
 
-Overwrite existing target files only when intentional:
+Sobrescribir archivos existentes en el destino solo cuando sea intencional:
 
 ```powershell
-.\.venv\Scripts\python.exe install_windows.py --target C:\path\to\target-repo --force
+.\.venv\Scripts\python.exe install_windows.py --target C:\ruta\al\repo-destino --force
 ```
 
-If the target repository already has a `.gitignore`, the installer keeps that
-file and appends only the ignore rules that are present in the template
-`.gitignore` but missing in the host. If the target repository does not have a
-`.gitignore`, the template `.gitignore` is copied as-is.
+Si el repositorio destino ya tiene un `.gitignore`, el instalador conserva ese
+archivo y solo añade las reglas de ignorado presentes en el `.gitignore` de la
+plantilla que falten en el destino. Si el repositorio destino no tiene
+`.gitignore`, el `.gitignore` de la plantilla se copia tal cual.
 
-The installer does not run Terraform, install dependencies, initialize Git, or
-execute pre-commit in the target repository.
+El instalador no ejecuta Terraform, no instala dependencias, no inicializa
+Git ni ejecuta pre-commit en el repositorio destino.
 
-The installer also leaves the installer entrypoints and template docs behind:
-`install_windows.py`, `install_linux.py`, files named `README.md`, and `docs/`
-are not copied to the target repository.
+El instalador también deja fuera los puntos de entrada del instalador y la
+documentación de la plantilla: `install_windows.py`, `install_linux.py`, los
+archivos llamados `README.md`, y `docs/` no se copian al repositorio destino.
 
-## How the Host Setup Works
+## Cómo funciona la instalación en el host
 
-The installer:
+El instalador:
 
-- copies `requirements.txt` and `requirements-dev.txt`
-- writes `.framework-version.json` to track the installed template version
+- copia `requirements.txt` y `requirements-dev.txt`
+- escribe `.framework-version.json` para llevar registro de la versión de
+  plantilla instalada
 
-Packaging bundles the runtime `requirements.txt` alongside `src/` for
-deployment.
+El empaquetado incluye el `requirements.txt` de runtime junto con `src/` para
+el despliegue.
