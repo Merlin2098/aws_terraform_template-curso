@@ -8,13 +8,19 @@ instalarla en otro repositorio.
 Desde la raíz del repositorio:
 
 ```powershell
-.\scripts\windows\setup_env.ps1
+.\scripts\python\setup_env.ps1
 ```
 
-Este wrapper de Windows resuelve Python automáticamente, crea `.venv` si es
-necesario con `python -m venv`, e instala las dependencias con `pip` a partir
-del `requirements.txt` actual del proyecto (y `requirements-dev.txt`, a menos
-que se pase `-NoDev`).
+O, en Git Bash:
+
+```bash
+./scripts/python/setup_env.sh
+```
+
+Este wrapper resuelve Python automáticamente, crea `.venv` si es necesario
+con `python -m venv`, e instala las dependencias con `pip` a partir del
+`requirements.txt` actual del proyecto (y `requirements-dev.txt`, a menos que
+se pase `-NoDev`).
 
 Cuando instalas esta plantilla en otro repositorio, el instalador copia
 `requirements.txt` y `requirements-dev.txt`.
@@ -39,15 +45,15 @@ Referencia: https://pre-commit.com/
 Para refrescar el entorno local después de editar dependencias:
 
 ```powershell
-.\scripts\windows\update_venv.ps1
+.\scripts\python\update_venv.ps1
 ```
 
 Para sincronizar solo las dependencias de runtime (omitiendo herramientas de
 desarrollo):
 
 ```powershell
-.\scripts\windows\setup_env.ps1 -NoDev
-.\scripts\windows\update_venv.ps1 -NoDev
+.\scripts\python\setup_env.ps1 -NoDev
+.\scripts\python\update_venv.ps1 -NoDev
 ```
 
 ## Instalar esta plantilla en otro repositorio

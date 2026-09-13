@@ -149,7 +149,9 @@ Script structure and templates: `ai/skills/aws/aws_smoke_testing.md`.
 
 - declare `aws_cloudwatch_log_group` explicitly for every service that produces logs
 - set `retention_in_days` on every log group — never omit it
-- include `aws_budgets_budget` when deploying any environment
+- gate `aws_budgets_budget` behind `enable_budget_guardrail` (default `false`); it is
+  opt-in for student/demo deployments and should be enabled explicitly for real
+  or long-lived environments
 - apply `local.common_tags` (including `CostCenter`) to every resource
 - expose `log_group_name`, `log_group_arn`, and `resource_arn` as outputs in every module
 - generate `tests/aws/` Python/boto3 validation tests when deploying AWS infrastructure

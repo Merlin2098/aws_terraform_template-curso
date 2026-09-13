@@ -10,6 +10,7 @@ para volver a cualquier sección.
 
 | Paso | Documento | Qué resuelve |
 |---|---|---|
+| 0 | [`../../scripts/python/README.md`](../../scripts/python/README.md) | Elegir terminal (Git Bash o PowerShell nativo) y saber qué script de setup usar en cada caso |
 | 1 | [`01_setup_windows.md`](01_setup_windows.md) | Instalar Terraform y AWS CLI en Windows, configurar credenciales, primer `terraform init`/`validate` |
 | 2 | [`02_mcp_setup.md`](02_mcp_setup.md) | Instalar los servidores MCP de AWS Documentation y Terraform en Claude Code (incluye el requisito de Docker Desktop) |
 

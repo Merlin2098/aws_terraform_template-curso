@@ -11,6 +11,12 @@ para:
 Esta guía evita intencionalmente gestores de paquetes como Chocolatey, para
 mantener el proceso de instalación explícito, portable y reproducible.
 
+> Los comandos de Terraform y AWS CLI de esta guía funcionan igual en Git
+> Bash o en PowerShell. Si buscas el script para crear tu entorno virtual de
+> Python (`.venv`), ve primero a
+> [`scripts/python/README.md`](../../scripts/python/README.md) — tiene la
+> versión para cada terminal.
+
 ---
 
 ## 1. Descargar Terraform desde el sitio oficial de HashiCorp
@@ -285,7 +291,7 @@ Para entornos corporativos restringidos:
 
 ```text
 tests/aws/
-scripts/windows/
+scripts/python/
 ```
 
 * Evitar hardcodear credenciales dentro de `.tfvars`

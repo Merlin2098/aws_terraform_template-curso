@@ -125,19 +125,20 @@ resource "aws_iam_role_policy" "cloudwatch_logs_access" {
 }
 
 resource "aws_sns_topic" "budget_alerts" {
-  count = var.budget_alert_email != "" ? 1 : 0
+  count = var.enable_budget_guardrail && var.budget_alert_email != "" ? 1 : 0
   name  = "${local.name_prefix}-budget-alerts"
   tags  = local.common_tags
 }
 
 resource "aws_sns_topic_subscription" "budget_email" {
-  count     = var.budget_alert_email != "" ? 1 : 0
+  count     = var.enable_budget_guardrail && var.budget_alert_email != "" ? 1 : 0
   topic_arn = aws_sns_topic.budget_alerts[0].arn
   protocol  = "email"
   endpoint  = var.budget_alert_email
 }
 
 resource "aws_budgets_budget" "monthly" {
+  count             = var.enable_budget_guardrail ? 1 : 0
   name              = "${local.name_prefix}-monthly-budget"
   budget_type       = "COST"
   limit_amount      = tostring(var.budget_limit_usd)

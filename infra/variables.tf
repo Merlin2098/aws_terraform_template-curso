@@ -70,14 +70,20 @@ variable "log_retention_days" {
   default     = 7
 }
 
+variable "enable_budget_guardrail" {
+  description = "Whether to create the monthly AWS Budget (and its SNS alert topic, if an email is set). Off by default for student/demo use; enable for real deployments."
+  type        = bool
+  default     = false
+}
+
 variable "budget_limit_usd" {
-  description = "Monthly AWS budget limit in USD. Alerts fire at 80% (actual) and 100% (forecasted)."
+  description = "Monthly AWS budget limit in USD. Alerts fire at 80% (actual) and 100% (forecasted). Only used when enable_budget_guardrail is true."
   type        = number
   default     = 25
 }
 
 variable "budget_alert_email" {
-  description = "Email address for budget alerts. Leave empty to skip SNS subscription creation."
+  description = "Email address for budget alerts. Leave empty to skip SNS subscription creation. Only used when enable_budget_guardrail is true."
   type        = string
   default     = ""
 }

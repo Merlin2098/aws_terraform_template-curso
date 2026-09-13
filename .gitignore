@@ -112,6 +112,7 @@ Thumbs.db
 .ai/
 docs/prompt
 reusable/
+data/
 
 # =========================
 # 🤖 Claude Code
