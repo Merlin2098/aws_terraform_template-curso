@@ -25,21 +25,6 @@ se pase `-NoDev`).
 Cuando instalas esta plantilla en otro repositorio, el instalador copia
 `requirements.txt` y `requirements-dev.txt`.
 
-Instalar pre-commit en el entorno del repositorio actual:
-
-```powershell
-.\.venv\Scripts\pre-commit.exe install
-.\.venv\Scripts\pre-commit.exe --version
-```
-
-Para ejecutar todos los hooks configurados manualmente:
-
-```powershell
-.\.venv\Scripts\pre-commit.exe run --all-files
-```
-
-Referencia: https://pre-commit.com/
-
 ## Refrescar o cambiar el entorno
 
 Para refrescar el entorno local después de editar dependencias:
@@ -88,8 +73,8 @@ archivo y solo añade las reglas de ignorado presentes en el `.gitignore` de la
 plantilla que falten en el destino. Si el repositorio destino no tiene
 `.gitignore`, el `.gitignore` de la plantilla se copia tal cual.
 
-El instalador no ejecuta Terraform, no instala dependencias, no inicializa
-Git ni ejecuta pre-commit en el repositorio destino.
+El instalador no ejecuta Terraform, no instala dependencias, ni inicializa
+Git en el repositorio destino.
 
 El instalador también deja fuera los puntos de entrada del instalador y la
 documentación de la plantilla: `install_windows.py`, `install_linux.py`, los

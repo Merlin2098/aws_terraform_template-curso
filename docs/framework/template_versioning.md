@@ -60,7 +60,7 @@ Cada entrada del manifiesto lleva un valor `ownership`:
 | Valor | Significado |
 |---|---|
 | `managed` | El framework es dueño de este archivo; se sobrescribe en cada actualización. |
-| `append-only` | Se copia una sola vez en la primera instalación; en actualizaciones posteriores solo se fusionan las entradas faltantes (p. ej. `.pre-commit-config.yaml`). |
+| `append-only` | Se copia una sola vez en la primera instalación; en actualizaciones posteriores solo se fusionan las entradas faltantes. Actualmente no hay archivos registrados en esta categoría. |
 
 `src/`, `infra/`, `tests/`, y `specs/project/` son **propiedad del host** y
 nunca aparecen en el manifiesto — el instalador nunca los toca.

@@ -102,7 +102,6 @@ The installer copies template files into the host repository, but it does not:
 * run Terraform
 * install dependencies in the host
 * initialize Git
-* execute pre-commit in the host
 
 Use `install_linux.py` only to copy the template into a host repository. To
 bootstrap the current repository environment, use the setup wrappers under

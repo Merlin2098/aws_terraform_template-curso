@@ -62,7 +62,7 @@ host de esta plantilla.
 | `docs/student/01_setup_windows.md` | Instalación de Terraform y AWS CLI en Windows |
 | `docs/student/05_terraform_cheatsheet.md` | Flujo de comandos día a día (`init`/`fmt`/`validate`/`plan`/`apply`) |
 | `ai/skills/terraform/state_management.md` | Backend local vs S3, locking nativo, higiene de state |
-| `ai/context.yaml` + `ai/tools/refresh_context.py` + `ai/hooks/treemap.py` | Implementación real de "pre-commit para generar contexto del agente" |
+| `ai/context.yaml` + `ai/tools/refresh_context.py` + `ai/hooks/treemap.py` | Generación de contexto del agente (ejecutable manualmente con `python -m ai.tools.refresh_context`) |
 
 > Diseño de módulos y convenciones de estilo genéricas de Terraform (antes
 > cubiertos por los skills locales `modules.md`, `environment_promotion.md`,

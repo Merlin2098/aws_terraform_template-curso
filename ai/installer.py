@@ -52,10 +52,7 @@ EXCLUDED_EXACT_FILES = {
 
 # Files that are copied once on first install (if absent) but are never
 # overwritten on update — only missing *entries* are merged in.
-# .pre-commit-config.yaml: host may add its own hooks.
-APPEND_ONLY_FILES = {
-    ".pre-commit-config.yaml",
-}
+APPEND_ONLY_FILES: set[str] = set()
 # Entries added to the host .gitignore that are not in the template's own
 # .gitignore — they apply to host repos but not to the template itself.
 HOST_EXTRA_GITIGNORE_ENTRIES = [
@@ -76,7 +73,7 @@ EXCLUDED_SUFFIXES = {
 # `generated`    = rendered at install time (not a byte-for-byte copy of template).
 # `managed`      = framework owns; host should not edit; overwritten on update.
 # `append-only`  = copied once on first install; on update only missing entries
-#                  are merged in (e.g. pyproject.toml, .pre-commit-config.yaml).
+#                  are merged in.
 # `template`     is reserved for a future explicit set — Phase 1 maps remaining
 #                non-generated, non-append-only files to `managed`.
 OWNERSHIP_GENERATED = "generated"
@@ -420,62 +417,6 @@ def create_optional_empty_dirs(
 # ---------------------------------------------------------------------------
 
 
-def _merge_precommit(template_path: Path, host_path: Path, dry_run: bool) -> list[str]:
-    """Merge missing hook ids from template .pre-commit-config.yaml into host.
-
-    Only adds hooks whose `id` is not already present in the host config.
-    Returns list of added hook ids.
-    """
-    import yaml
-
-    try:
-        template_doc = yaml.safe_load(template_path.read_text(encoding="utf-8")) or {}
-        host_doc = yaml.safe_load(host_path.read_text(encoding="utf-8")) or {}
-    except Exception:
-        return []
-
-    template_repos = template_doc.get("repos", [])
-    host_repos = host_doc.get("repos", [])
-
-    # Collect existing hook ids in host.
-    existing_ids: set[str] = set()
-    for repo in host_repos:
-        for hook in repo.get("hooks", []):
-            if hook.get("id"):
-                existing_ids.add(hook["id"])
-
-    added: list[str] = []
-    for repo in template_repos:
-        missing_hooks = [
-            h
-            for h in repo.get("hooks", [])
-            if h.get("id") and h["id"] not in existing_ids
-        ]
-        if not missing_hooks:
-            continue
-        added.extend(h["id"] for h in missing_hooks)
-        if dry_run:
-            continue
-        # Find or create the matching repo entry in the host.
-        repo_url = repo.get("repo", "local")
-        host_repo = next((r for r in host_repos if r.get("repo") == repo_url), None)
-        if host_repo is None:
-            host_repos.append({"repo": repo_url, "hooks": missing_hooks})
-        else:
-            host_repo.setdefault("hooks", []).extend(missing_hooks)
-
-    if added and not dry_run:
-        host_doc["repos"] = host_repos
-        host_path.write_text(
-            yaml.safe_dump(
-                host_doc, sort_keys=False, default_flow_style=False, allow_unicode=True
-            ),
-            encoding="utf-8",
-        )
-
-    return added
-
-
 def merge_append_only_file(
     template_path: Path,
     host_path: Path,
@@ -485,10 +426,9 @@ def merge_append_only_file(
 ) -> list[str]:
     """Dispatch to the right merge function for an append-only file.
 
-    Returns a list of added hook ids.
+    No append-only files are currently registered; APPEND_ONLY_FILES is empty
+    and this is never invoked. Kept as the extension point for a future entry.
     """
-    if relative.as_posix() == ".pre-commit-config.yaml":
-        return _merge_precommit(template_path, host_path, dry_run)
     return []
 
 
@@ -535,9 +475,8 @@ def _patch_host_file_hashes(
 ) -> None:
     """Replace template-source hashes with actual on-disk hashes for a set of paths.
 
-    Used for append-only files (pyproject.toml, .pre-commit-config.yaml) whose
-    host copy may differ from the template source because the host already had
-    the file or it was modified post-copy.
+    Used for append-only files whose host copy may differ from the template
+    source because the host already had the file or it was modified post-copy.
     """
     if dry_run:
         return

@@ -340,4 +340,3 @@ reproducible y asistido por IA:
 * Codex
 * Ruff
 * Pytest
-* pre-commit

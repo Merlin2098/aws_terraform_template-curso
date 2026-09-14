@@ -39,8 +39,7 @@ treemap_ignore_dirs:
   - vendor
   - venv
 
-ignore_top_level_files:
-  - .pre-commit-config.yaml
+ignore_top_level_files: []
 
 structure:
   python:
