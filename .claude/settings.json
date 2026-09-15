@@ -8,7 +8,6 @@
       "Bash(python scripts/testing/run_ruff_format.py:*)",
       "Bash(python scripts/package.py:*)",
       "Bash(python scripts/generate_treemap.py:*)",
-      "Bash(python scripts/hooks/ai_refresh.py:*)",
       "Bash(terraform fmt:*)",
       "Bash(terraform validate:*)",
       "Bash(terraform plan:*)",

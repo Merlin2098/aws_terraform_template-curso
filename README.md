@@ -67,7 +67,6 @@ tests/                 Lightweight validation
 ```bash
 python scripts/package.py
 python scripts/testing/run_pytest.py
-python scripts/hooks/ai_refresh.py
 ./scripts/python/setup_env.sh
 ./scripts/python/update_venv.sh
 python3 install_linux.py --target /path/to/repo --dry-run
