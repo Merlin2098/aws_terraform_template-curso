@@ -203,7 +203,7 @@ AWS_DEFAULT_REGION=us-east-1
 Cargar las credenciales en la sesión actual de PowerShell:
 
 ```powershell
-Get-Content infra\env\.env.credentials | ForEach-Object {
+Get-Content .env.credentials | ForEach-Object {
   if ($_ -match "^\s*#" -or $_ -match "^\s*$") { return }
 
   $name, $value = $_ -split "=", 2

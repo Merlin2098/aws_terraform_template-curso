@@ -96,7 +96,7 @@ override.tf.json
 # =========================
 .env
 .env.*
-!infra/env/.env.example
+!.env.example
 # =========================
 # 🛠️ IDE / Editor
 # =========================

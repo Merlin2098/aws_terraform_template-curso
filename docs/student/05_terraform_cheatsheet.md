@@ -2,7 +2,7 @@
 
 Usa este flujo desde PowerShell en la raíz del repositorio.
 
-Este laboratorio espera credenciales de AWS en `infra\env\.env.credentials`.
+Este laboratorio espera credenciales de AWS en `.env.credentials` (raíz del repo).
 Mantén ese archivo solo en local. No subas claves de acceso reales.
 
 ## Sobre los dos estilos de comando
@@ -30,7 +30,7 @@ la raíz del repo.
 ## 1. Cargar credenciales de AWS
 
 ```powershell
-Get-Content infra\env\.env.credentials | ForEach-Object {
+Get-Content .env.credentials | ForEach-Object {
   if ($_ -match "^\s*#" -or $_ -match "^\s*$") { return }
 
   $name, $value = $_ -split "=", 2

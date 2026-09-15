@@ -4,7 +4,7 @@ from pathlib import Path
 import boto3
 from dotenv import load_dotenv
 
-load_dotenv(Path(__file__).parent.parent / "infra" / "env" / ".env.credentials")
+load_dotenv(Path(__file__).parent.parent.parent / ".env.credentials")
 
 
 def get_client(service: str):
